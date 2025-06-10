@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import AppSidebar from '$lib/components/app-sidebar.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import '../app.css';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
@@ -24,26 +25,9 @@
 	});
 </script>
 
-<h1 class="text-2xl text-center p-2">C4 Chat</h1>
-
-<div class="flex w-full h-full flex-col items-center justify-center">
-	{#if isAuthenticated}
-		<Button
-			onclick={() => {
-				auth.signOut();
-			}}
-		>
-			Sign Out
-		</Button>
-	{:else}
-		<Button
-			onclick={() => {
-				auth.signIn('anonymous');
-			}}
-		>
-			Sign In
-		</Button>
-	{/if}
-
-	{@render children()}
-</div>
+<Sidebar.Provider>
+	<AppSidebar />
+	<main>
+		{@render children?.()}
+	</main>
+</Sidebar.Provider>

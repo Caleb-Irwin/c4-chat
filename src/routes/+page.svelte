@@ -15,7 +15,7 @@
 	const auth = $derived(useAuth());
 </script>
 
-<main class="p-2">
+<div class="p-2">
 	<Button>Hello World!</Button>
 	<p>
 		{#if query.isLoading}
@@ -29,9 +29,9 @@
 		{auth.isAuthenticated ? 'Authenticated' : 'Not authenticated'}
 	</p>
 
-	<ul class="list-disc">
+	<ul class="list-disc pl-4">
 		{#each query.data ?? [] as name}
 			<li>{name}</li>
 		{/each}
 	</ul>
-</main>
+</div>
