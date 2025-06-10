@@ -5,7 +5,7 @@
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 
 	const query = useQuery(
-		api.messages.helloWorld,
+		api.models.allNames,
 		{},
 		{
 			keepPreviousData: true
@@ -22,12 +22,16 @@
 			Loading...
 		{:else if query.error}
 			Error: {query.error.message}
-		{:else}
-			{query.data}
 		{/if}
 	</p>
 
 	<p>
 		{auth.isAuthenticated ? 'Authenticated' : 'Not authenticated'}
 	</p>
+
+	<ul class="list-disc">
+		{#each query.data ?? [] as name}
+			<li>{name}</li>
+		{/each}
+	</ul>
 </main>

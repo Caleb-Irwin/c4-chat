@@ -9,9 +9,9 @@
 
 	setupConvexAuth({ getServerState: () => data.authState });
 
-	const auth = useAuth();
-	const isAuthenticated = $derived(auth.isAuthenticated);
-	const isLoading = $derived(auth.isLoading);
+	const auth = useAuth(),
+		isAuthenticated = $derived(auth.isAuthenticated),
+		isLoading = $derived(auth.isLoading);
 
 	$effect(() => {
 		if (!browser) return;
