@@ -6,6 +6,7 @@
 
 	const auth = useAuth(),
 		isAuthenticated = $derived(auth.isAuthenticated);
+	console.log(auth.token);
 </script>
 
 <div class="fixed top-4 left-4 z-50">
@@ -35,7 +36,14 @@
 		</Sidebar.Group>
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<div class="flex w-full justify-center">
+		<div class="flex w-full justify-center space-x-1">
+			<Button
+				onclick={() => {
+					auth.signIn('google');
+				}}
+			>
+				Google Sign In
+			</Button>
 			{#if isAuthenticated}
 				<Button
 					onclick={() => {
