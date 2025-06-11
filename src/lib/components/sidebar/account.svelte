@@ -9,6 +9,7 @@
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Settings from '@lucide/svelte/icons/settings';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
+	import OpenRouterIcon from './OpenRouterIcon.svelte';
 
 	const userInfo = useQuery(
 		api.user.getInfo,
@@ -52,6 +53,7 @@
 						// auth.signIn('google');
 					}}
 				>
+					<OpenRouterIcon />
 					Sign in with OpenRouter
 				</Button>
 			{/if}

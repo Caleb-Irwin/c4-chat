@@ -18,18 +18,15 @@
 	$effect(() => {
 		if (!browser) return;
 		if (!isLoading && !isAuthenticated) {
-			console.log('User is not authenticated yet, waiting...');
 			auth.signIn('anonymous');
-		} else if (isAuthenticated) {
-			console.log('User is authenticated');
 		}
 	});
 </script>
 
 <ModeWatcher />
-<Sidebar.Provider>
+<Sidebar.Provider class="h-full">
 	<AppSidebar />
-	<main>
+	<main class="w-full h-full flex flex-col">
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>

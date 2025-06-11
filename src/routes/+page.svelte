@@ -3,6 +3,8 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '../convex/_generated/api';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import ChatInput from '$lib/components/chat-input.svelte';
+	import Chat from '$lib/components/chat.svelte';
 
 	const query = useQuery(
 		api.models.allNames,
@@ -15,7 +17,9 @@
 	const auth = $derived(useAuth());
 </script>
 
-<div class="p-2 pt-16">
+<Chat />
+
+<!-- <div class="p-2 pt-16">
 	<Button>Hello World!</Button>
 	<p>
 		{#if query.isLoading}
@@ -34,4 +38,4 @@
 			<li>{name}</li>
 		{/each}
 	</ul>
-</div>
+</div> -->
