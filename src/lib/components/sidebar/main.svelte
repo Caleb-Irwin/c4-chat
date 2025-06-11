@@ -1,12 +1,9 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
-	import Button from './ui/button/button.svelte';
+	import Button from '../ui/button/button.svelte';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
-
-	const auth = useAuth(),
-		isAuthenticated = $derived(auth.isAuthenticated);
-	console.log(auth.token);
+	import Account from './account.svelte';
 </script>
 
 <div class="fixed top-4 left-4 z-50">
@@ -36,32 +33,7 @@
 		</Sidebar.Group>
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<div class="flex w-full justify-center space-x-1">
-			<Button
-				onclick={() => {
-					auth.signIn('google');
-				}}
-			>
-				Google Sign In
-			</Button>
-			{#if isAuthenticated}
-				<Button
-					onclick={() => {
-						auth.signOut();
-					}}
-				>
-					Sign Out
-				</Button>
-			{:else}
-				<Button
-					onclick={() => {
-						auth.signIn('anonymous');
-					}}
-				>
-					Sign In
-				</Button>
-			{/if}
-		</div>
+		<Account />
 
 		<div class="text-xs text-center p-1 flex justify-center w-full">
 			<a

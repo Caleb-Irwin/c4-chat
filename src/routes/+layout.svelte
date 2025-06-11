@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import AppSidebar from '$lib/components/app-sidebar.svelte';
+	import AppSidebar from '$lib/components/sidebar/main.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import '../app.css';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
