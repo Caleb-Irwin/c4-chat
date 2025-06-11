@@ -8,6 +8,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Settings from '@lucide/svelte/icons/settings';
+	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
 	const userInfo = useQuery(
 		api.user.getInfo,
@@ -21,11 +22,39 @@
 		isLoading = $derived(auth.isLoading),
 		isAnonymous = $derived(userInfo.isLoading ? true : userInfo.data?.isAnonymous === true),
 		isEitherLoading = $derived(isLoading || userInfo.isLoading);
+
+	let isSigningOut = $state(false);
+	$effect(() => {
+		if (isSigningOut && !isEitherLoading && isAnonymous) {
+			isSigningOut = false;
+		}
+	});
 </script>
 
 <div class="flex flex-col items-center justify-center">
 	<Card.Root class="p-2 w-full">
 		<div>
+			{#if !isEitherLoading && isAnonymous}
+				<Button
+					class="w-full"
+					onclick={() => {
+						auth.signIn('google');
+					}}
+				>
+					<GoogleIcon />
+					Sign in with Google
+				</Button>
+
+				<Button
+					class="w-full my-2"
+					disabled
+					onclick={() => {
+						// auth.signIn('google');
+					}}
+				>
+					Sign in with OpenRouter
+				</Button>
+			{/if}
 			<div class="flex items-center min-h-9">
 				<Avatar.Root>
 					<Avatar.Image src={userInfo?.data?.image} alt="User Avatar" />
@@ -38,43 +67,33 @@
 						? ''
 						: (userInfo?.data?.name ?? `Anonymous ${userInfo.data?._id?.slice(0, 4)}`)}
 				</p>
-				{#if !isAnonymous || isLoading}
-					<Button disabled={isEitherLoading} href="/settings" class="mr-1" variant="secondary">
+				{#if !isAnonymous || isEitherLoading}
+					<Button
+						disabled={isEitherLoading}
+						href="/settings"
+						class="mr-1"
+						variant="secondary"
+						size="icon"
+					>
 						<Settings />
 					</Button>
 					<Button
-						disabled={isEitherLoading}
+						disabled={isEitherLoading || isSigningOut}
 						onclick={() => {
+							isSigningOut = true;
 							auth.signOut();
 						}}
 						variant="secondary"
+						size="icon"
 					>
-						<LogOut />
+						{#if isSigningOut}
+							<Loader2Icon class="animate-spin" />
+						{:else}
+							<LogOut />
+						{/if}
 					</Button>
 				{/if}
 			</div>
-
-			{#if !isEitherLoading && isAnonymous}
-				<Button
-					class="w-full mt-2"
-					onclick={() => {
-						auth.signIn('google');
-					}}
-				>
-					<GoogleIcon />
-					Sign in with Google
-				</Button>
-
-				<Button
-					class="w-full mt-2"
-					disabled
-					onclick={() => {
-						// auth.signIn('google');
-					}}
-				>
-					Sign in with OpenRouter
-				</Button>
-			{/if}
 		</div>
 	</Card.Root>
 </div>

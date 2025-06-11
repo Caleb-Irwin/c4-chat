@@ -15,7 +15,7 @@
 	const auth = $derived(useAuth());
 </script>
 
-<div class="p-2">
+<div class="p-2 pt-16">
 	<Button>Hello World!</Button>
 	<p>
 		{#if query.isLoading}

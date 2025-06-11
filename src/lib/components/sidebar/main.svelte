@@ -1,17 +1,21 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
-	import Button from '../ui/button/button.svelte';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
 	import Account from './account.svelte';
+	import LightSwitch from '../light-switch.svelte';
 </script>
 
-<div class="fixed top-4 left-4 z-50">
-	<Sidebar.Trigger class="bg-background" />
+<div class="fixed top-2 left-2 z-50">
+	<Sidebar.Trigger class="h-9 w-9 bg-sidebar" />
+</div>
+<div class="fixed top-2 right-2 z-50">
+	<LightSwitch />
 </div>
 <Sidebar.Root>
 	<Sidebar.Header>
-		<h1 class="text-xl p-2 text-center">C4 Chat</h1>
+		<h1 class="text-lg p-1 text-center">
+			<span class="font-semibold">C4</span> Chat
+		</h1>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>

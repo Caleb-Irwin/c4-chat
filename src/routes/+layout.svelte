@@ -5,6 +5,7 @@
 	import '../app.css';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data } = $props();
 
@@ -25,6 +26,7 @@
 	});
 </script>
 
+<ModeWatcher />
 <Sidebar.Provider>
 	<AppSidebar />
 	<main>
