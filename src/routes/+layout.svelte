@@ -11,22 +11,18 @@
 
 	setupConvexAuth({ getServerState: () => data.authState });
 
-	const auth = useAuth(),
-		isLoading = $derived(auth.isLoading),
-		isAuthenticated = $derived(auth.isAuthenticated);
-
-	$effect(() => {
-		if (browser && !isLoading && !isAuthenticated) {
-			auth.signIn('anonymous');
-		}
-	});
-
 	const user = useUser();
 	user.addInitialData(data.userRow);
 
 	$effect(() => {
 		if (browser && user.row) {
 			localStorage.setItem('userRow', JSON.stringify(user.row));
+		}
+	});
+
+	$effect(() => {
+		if (browser && !user.isAuthenticated && !user._isLoading) {
+			user._ensureSession();
 		}
 	});
 </script>

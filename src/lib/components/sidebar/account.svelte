@@ -13,7 +13,6 @@
 	const user = useUser(),
 		auth = useAuth();
 
-	const isAnonymous = $derived(user.row ? user.row.isAnonymous : false);
 	const avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
 
 	let isSigningOut = $state(false);
@@ -27,7 +26,7 @@
 <div class="flex flex-col items-center justify-center">
 	<Card.Root class="p-2 w-full">
 		<div>
-			{#if isAnonymous}
+			{#if user.isAnonymous}
 				<Button
 					class="w-full"
 					onclick={() => {
@@ -58,12 +57,11 @@
 					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
 				</Avatar.Root>
 				<p class="flex-grow px-2 font-semibold text-accent-foreground">
-					{user.row
-						? (user.row?.name ??
-							`Anonymous ${user.row._id ? `(${user.row._id.slice(user.row._id.length - 6)})` : ''}`)
-						: ''}
+					{user.isAnonymous
+						? `Anonymous ${user?.row?._id ? `(${user.row._id.slice(user.row._id.length - 6)})` : ''}`
+						: user.row?.name}
 				</p>
-				{#if !isAnonymous}
+				{#if !user.isAnonymous}
 					<Button
 						disabled={!user.row}
 						href="/settings"
