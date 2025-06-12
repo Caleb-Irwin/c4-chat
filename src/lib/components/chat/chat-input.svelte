@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Button from './ui/button/button.svelte';
-	import Textarea from './ui/textarea/textarea.svelte';
+	import Button from '../ui/button/button.svelte';
+	import Textarea from '../ui/textarea/textarea.svelte';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import ModelSelector from './model-selector.svelte';
 	import Brain from '@lucide/svelte/icons/brain';

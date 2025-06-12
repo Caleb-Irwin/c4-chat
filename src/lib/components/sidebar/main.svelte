@@ -8,16 +8,18 @@
 	import Button from '../ui/button/button.svelte';
 	import Input from '../ui/input/input.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
+	import Separator from '../ui/separator/separator.svelte';
 
 	const sidebar = useSidebar();
 </script>
 
-<div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm pointer-events-auto">
-	<Sidebar.Trigger class="h-9 w-9 bg-sidebar" />
+<div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm cursor-default">
+	<Sidebar.Trigger class="h-9 w-9 bg-sidebar cursor-pointer" />
 	<Button
 		variant="ghost"
 		size="icon"
-		class="bg-sidebar transition-[width] overflow-hidden {sidebar.open && !sidebar.isMobile
+		class="bg-sidebar transition-[width] overflow-hidden cursor-pointer {sidebar.open &&
+		!sidebar.isMobile
 			? 'w-0 p-0'
 			: 'w-9'}"
 	>
@@ -87,7 +89,10 @@
 				rel="noopener noreferrer"
 				class="underline">GitHub</a
 			>
-			<p class="text-xs text-center pl-2">
+
+			<Separator orientation="vertical" class="mx-2" />
+
+			<p class="text-xs text-center">
 				Made by <a href="https://calebirwin.ca" class="underline">Caleb</a> in 🇨🇦
 			</p>
 		</div>

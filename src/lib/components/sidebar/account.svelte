@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import Button from '../ui/button/button.svelte';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '../../../convex/_generated/api';
 	import GoogleIcon from './GoogleIcon.svelte';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -10,23 +8,16 @@
 	import Settings from '@lucide/svelte/icons/settings';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import OpenRouterIcon from './OpenRouter.svelte';
+	import { useUser } from '$lib/user.svelte';
 
-	const userInfo = useQuery(
-		api.user.getInfo,
-		{},
-		{
-			keepPreviousData: true
-		}
-	);
+	const user = useUser(),
+		auth = useAuth();
 
-	const auth = useAuth(),
-		isLoading = $derived(auth.isLoading),
-		isAnonymous = $derived(userInfo.isLoading ? true : userInfo.data?.isAnonymous === true),
-		isEitherLoading = $derived(isLoading || userInfo.isLoading);
+	const isAnonymous = $derived(user.row ? user.row.isAnonymous : false);
 
 	let isSigningOut = $state(false);
 	$effect(() => {
-		if (isSigningOut && !isEitherLoading && isAnonymous) {
+		if (user.isAuthenticated && user.row?.isAnonymous) {
 			isSigningOut = false;
 		}
 	});
@@ -35,7 +26,7 @@
 <div class="flex flex-col items-center justify-center">
 	<Card.Root class="p-2 w-full">
 		<div>
-			{#if !isEitherLoading && isAnonymous}
+			{#if !user.isAuthenticated || isAnonymous}
 				<Button
 					class="w-full"
 					onclick={() => {
@@ -59,19 +50,15 @@
 			{/if}
 			<div class="flex items-center min-h-9">
 				<Avatar.Root>
-					<Avatar.Image src={userInfo?.data?.image} alt="User Avatar" />
-					<Avatar.Fallback
-						>{isEitherLoading ? '' : (userInfo.data?.name?.[0] ?? 'A')}</Avatar.Fallback
-					>
+					<Avatar.Image src={user.row?.image} alt="User Avatar" />
+					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
 				</Avatar.Root>
 				<p class="flex-grow px-2 font-semibold text-accent-foreground">
-					{isEitherLoading
-						? ''
-						: (userInfo?.data?.name ?? `Anonymous ${userInfo.data?._id?.slice(0, 4)}`)}
+					{user.row ? (user.row?.name ?? `Anonymous ${user.row?._id?.slice(0, 4) ?? ''}`) : ''}
 				</p>
-				{#if !isAnonymous || isEitherLoading}
+				{#if !isAnonymous}
 					<Button
-						disabled={isEitherLoading}
+						disabled={!user.row}
 						href="/settings"
 						class="mr-1"
 						variant="secondary"
@@ -80,7 +67,7 @@
 						<Settings />
 					</Button>
 					<Button
-						disabled={isEitherLoading || isSigningOut}
+						disabled={!user.row}
 						onclick={() => {
 							isSigningOut = true;
 							auth.signOut();

@@ -2,9 +2,9 @@
 	import { browser } from '$app/environment';
 	import AppSidebar from '$lib/components/sidebar/main.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { useUser } from '$lib/user.svelte';
 	import '../app.css';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
-	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { setupConvexAuth, useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data } = $props();
@@ -12,13 +12,21 @@
 	setupConvexAuth({ getServerState: () => data.authState });
 
 	const auth = useAuth(),
-		isAuthenticated = $derived(auth.isAuthenticated),
-		isLoading = $derived(auth.isLoading);
+		isLoading = $derived(auth.isLoading),
+		isAuthenticated = $derived(auth.isAuthenticated);
 
 	$effect(() => {
-		if (!browser) return;
-		if (!isLoading && !isAuthenticated) {
+		if (browser && !isLoading && !isAuthenticated) {
 			auth.signIn('anonymous');
+		}
+	});
+
+	const user = useUser();
+	user.addInitialData(data.userRow);
+
+	$effect(() => {
+		if (browser && user.row) {
+			localStorage.setItem('userRow', JSON.stringify(user.row));
 		}
 	});
 </script>

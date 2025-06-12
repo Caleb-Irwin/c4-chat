@@ -6,25 +6,25 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
 
-	const frameworks = [
+	const query = useQuery(
+		api.models.allNames,
+		{},
 		{
-			value: 'chatgpt/o3',
-			label: 'o3'
-		},
-		{
-			value: 'anthropic/claude-4',
-			label: 'Claude 4'
-		},
-		{
-			value: 'google/gemini-2.5-flash',
-			label: 'Gemini 2.5 Flash'
-		},
-		{
-			value: 'custom/who-knows',
-			label: 'Who knows? What a long name for a model!'
+			keepPreviousData: true
 		}
-	];
+	);
+
+	const frameworks = $derived(
+		query.data?.map(({ name, id }) => ({
+			label: name,
+			value: id
+		})) ?? []
+	);
+
+	$effect(() => console.log('Frameworks:', frameworks.length));
 
 	let open = $state(false);
 	let value = $state('');
@@ -60,7 +60,7 @@
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content class="w-[200px] p-0">
+	<Popover.Content class="w-80 max-w-screen p-0">
 		<Command.Root>
 			<Command.Input placeholder="Search models..." />
 			<Command.List>
