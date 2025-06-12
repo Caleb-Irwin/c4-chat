@@ -48,9 +48,18 @@
 					Sign in with OpenRouter
 				</Button>
 			{/if}
+
 			<div class="flex items-center min-h-9">
+				<img
+					src={user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : undefined}
+					class="hidden"
+					alt="User Avatar"
+				/>
 				<Avatar.Root>
-					<Avatar.Image src={user.row?.image} alt="User Avatar" />
+					<Avatar.Image
+						src={user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : undefined}
+						alt="User Avatar"
+					/>
 					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
 				</Avatar.Root>
 				<p class="flex-grow px-2 font-semibold text-accent-foreground">

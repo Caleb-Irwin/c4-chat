@@ -28,7 +28,11 @@ export default defineSchema({
         title: v.string(),
         generating: v.boolean(),
         lastModified: v.number(),
-    }).index("by_user_lastModified", ['user', 'lastModified']),
+    }).index("by_user_lastModified", ['user', 'lastModified'])
+        .searchIndex("search_title", {
+            searchField: "title",
+            filterFields: ["user", "lastModified"],
+        }),
     messages: defineTable({
         user: v.id("users"),
         thread: v.id("threads"),

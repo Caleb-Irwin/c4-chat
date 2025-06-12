@@ -9,8 +9,15 @@
 	import Input from '../ui/input/input.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 	import Separator from '../ui/separator/separator.svelte';
+	import { afterNavigate } from '$app/navigation';
 
 	const sidebar = useSidebar();
+
+	afterNavigate(() => {
+		if (sidebar.isMobile) {
+			sidebar.setOpenMobile(false);
+		}
+	});
 </script>
 
 <div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm cursor-default">
@@ -57,6 +64,7 @@
 			<Input
 				type="text"
 				placeholder="Search your threads..."
+				tabindex={-1}
 				class="w-full pl-4 p-2 border-0 bg-sidebar dark:bg-sidebar text-sm focus-visible:ring-0 focus-visible:border-0"
 			/>
 		</div>
