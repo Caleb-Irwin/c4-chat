@@ -13,7 +13,7 @@ interface User {
 
 class UserClass implements User {
     private initialData: Doc<'users'> | null = $state<Doc<'users'> | null>(null);
-    private query = useQuery(api.user.getRow, {});
+    private query = useQuery(api.users.getRow, {});
     private auth = useAuth()
     private localState = $derived<Doc<'users'> | null>(browser ? JSON.parse(localStorage.getItem('userRow') ?? 'null') : null);
     row = $derived<Doc<'users'> | null>(this.query.data ?? this.initialData ?? this.localState ?? null);

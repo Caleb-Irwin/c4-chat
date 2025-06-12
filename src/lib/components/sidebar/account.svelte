@@ -27,7 +27,7 @@
 <div class="flex flex-col items-center justify-center">
 	<Card.Root class="p-2 w-full">
 		<div>
-			{#if !user.isAuthenticated || isAnonymous}
+			{#if isAnonymous}
 				<Button
 					class="w-full"
 					onclick={() => {
@@ -58,7 +58,10 @@
 					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
 				</Avatar.Root>
 				<p class="flex-grow px-2 font-semibold text-accent-foreground">
-					{user.row ? (user.row?.name ?? `Anonymous ${user.row?._id?.slice(0, 4) ?? ''}`) : ''}
+					{user.row
+						? (user.row?.name ??
+							`Anonymous ${user.row._id ? `(${user.row._id.slice(user.row._id.length - 6)})` : ''}`)
+						: ''}
 				</p>
 				{#if !isAnonymous}
 					<Button

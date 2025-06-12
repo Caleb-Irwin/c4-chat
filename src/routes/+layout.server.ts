@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async (event) => {
     async function getUserRow() {
         const { createConvexHttpClient } = createConvexAuthHandlers();
         const client = await createConvexHttpClient(event);
-        return await client.query(api.user.getRow, {})
+        return await client.query(api.users.getRow, {})
     }
 
     return { authState: await getAuthState(event), userRow: getUserRow() };
