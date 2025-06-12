@@ -10,9 +10,9 @@
 	let {}: {} = $props();
 </script>
 
-<div class="p-2 rounded-xl bg-sidebar shadow-sm">
+<div class="px-2 pt-2 rounded-xl rounded-b-none bg-sidebar shadow-sm">
 	<div
-		class="w-full bg-background/30 text-card-foreground flex flex-col rounded-xl pb-1.5 shadow-sm"
+		class="w-full bg-background/30 text-card-foreground flex flex-col rounded-xl rounded-b-none shadow-sm"
 	>
 		<div class="p-3 pb-0">
 			<Textarea
@@ -41,6 +41,5 @@
 			<div class="flex-grow"></div>
 			<Button size="icon" class="ml-1 flex-shrink-0"><ArrowUp width="24" height="24" /></Button>
 		</div>
-		<div class="h-2"></div>
 	</div>
 </div>
