@@ -4,7 +4,7 @@
 	let {} = $props();
 </script>
 
-<div class="flex-grow w-full max:h-screen overflow-hidden flex justify-center">
+<div class="flex-grow w-full max:h-screen flex justify-center">
 	<div class="flex-grow w-full overflow-hidden flex flex-col pb-0 -mb-2">
 		<div class="flex-grow w-full flex justify-center max-h-screen overflow-x-scroll px-2">
 			<div class="max-w-3xl w-full px-2">
