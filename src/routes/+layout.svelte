@@ -4,7 +4,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { useUser } from '$lib/user.svelte';
 	import '../app.css';
-	import { setupConvexAuth, useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data } = $props();

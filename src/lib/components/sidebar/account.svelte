@@ -1,93 +1,56 @@
 <script lang="ts">
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 	import Button from '../ui/button/button.svelte';
 	import GoogleIcon from './GoogleIcon.svelte';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import LogOut from '@lucide/svelte/icons/log-out';
-	import Settings from '@lucide/svelte/icons/settings';
-	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import OpenRouterIcon from './OpenRouter.svelte';
 	import { useUser } from '$lib/user.svelte';
 
 	const user = useUser(),
-		auth = useAuth();
-
-	const avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
-
-	let isSigningOut = $state(false);
-	$effect(() => {
-		if (user.isAuthenticated && user.row?.isAnonymous) {
-			isSigningOut = false;
-		}
-	});
+		avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
 </script>
 
 <div class="flex flex-col items-center justify-center">
-	<Card.Root class="p-2 w-full">
-		<div>
-			{#if user.isAnonymous}
-				<Button
-					class="w-full"
-					onclick={() => {
-						auth.signIn('google');
-					}}
-				>
-					<GoogleIcon />
-					Sign in with Google
-				</Button>
+	<div class="p-1 w-full">
+		{#if user.isAnonymous}
+			<Button
+				class="w-full cursor-pointer"
+				onclick={() => {
+					user.signInGoogle();
+				}}
+			>
+				<GoogleIcon />
+				Sign in with Google
+			</Button>
 
-				<Button
-					class="w-full my-2"
-					disabled
-					onclick={() => {
-						// auth.signIn('google');
-					}}
-				>
-					<OpenRouterIcon />
-					Sign in with OpenRouter
-				</Button>
-			{/if}
+			<Button
+				class="w-full cursor-pointer my-2"
+				onclick={() => {
+					user.signInOpenRouter();
+				}}
+			>
+				<OpenRouterIcon />
+				Sign in with OpenRouter
+			</Button>
+		{/if}
 
-			<div class="flex items-center min-h-9">
+		{#if !user.isAnonymous && user.row}
+			<a
+				href={user.row ? '/settings' : '/'}
+				class="flex items-center min-h-9 p-3 rounded-sm hover:bg-accent"
+			>
 				<Avatar.Root>
 					{#if avatarSrc}
 						<Avatar.Image src={avatarSrc} alt="User Avatar" />
 					{/if}
-					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
+					<Avatar.Fallback>{user.row?.name?.[0] ?? ''}</Avatar.Fallback>
 				</Avatar.Root>
-				<p class="flex-grow px-2 font-semibold text-accent-foreground">
-					{user.isAnonymous
-						? `Anonymous ${user?.row?._id ? `(${user.row._id.slice(user.row._id.length - 6)})` : ''}`
-						: user.row?.name}
+				<p class="flex-grow px-3 text-accent-foreground flex flex-col">
+					<span class="truncate text-sm"> {user.row?.name}</span>
+					<span class="text-xs text-muted-foreground">
+						{user.row?.openRouterConnected === true ? 'Pro' : 'Basic'}</span
+					>
 				</p>
-				{#if !user.isAnonymous}
-					<Button
-						disabled={!user.row}
-						href="/settings"
-						class="mr-1"
-						variant="secondary"
-						size="icon"
-					>
-						<Settings />
-					</Button>
-					<Button
-						disabled={!user.row}
-						onclick={() => {
-							isSigningOut = true;
-							auth.signOut();
-						}}
-						variant="secondary"
-						size="icon"
-					>
-						{#if isSigningOut}
-							<Loader2Icon class="animate-spin" />
-						{:else}
-							<LogOut />
-						{/if}
-					</Button>
-				{/if}
-			</div>
-		</div>
-	</Card.Root>
+			</a>
+		{/if}
+	</div>
 </div>

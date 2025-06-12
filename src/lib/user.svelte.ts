@@ -4,6 +4,7 @@ import { useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 import { browser } from '$app/environment';
+import { invalidateAll } from '$app/navigation';
 
 
 interface User {
@@ -13,6 +14,9 @@ interface User {
     _isLoading: boolean,
     _ensureSession: () => void,
     addInitialData: (data: Promise<Doc<'users'> | null>) => void,
+    signOut: () => void,
+    signInGoogle: () => void,
+    signInOpenRouter: () => void,
 }
 
 class UserClass implements User {
@@ -34,6 +38,20 @@ class UserClass implements User {
 
     async addInitialData(data: Promise<Doc<'users'> | null>) {
         this.initialData = await data;
+    }
+
+    signOut = () => {
+        this.createdAnonymousSession = false;
+        this.initialData = null;
+        this.localState = null;
+        this.auth.signOut();
+        invalidateAll();
+    };
+    signInGoogle = () => {
+        this.auth.signIn('google');
+    };
+    signInOpenRouter = () => {
+        // this.auth.signIn('openRouter');
     }
 }
 

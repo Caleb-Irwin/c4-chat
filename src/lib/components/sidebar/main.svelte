@@ -87,21 +87,19 @@
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 	</Sidebar.Content>
-	<Sidebar.Footer>
+	<Sidebar.Footer class="gap-0">
 		<Account />
 
-		<div class="text-xs text-center p-1 flex justify-center w-full">
+		<div class="text-xs text-center p-0.5 px-3 flex justify-center w-full text-muted-foreground">
 			<a
 				href="http://github.com/caleb-irwin/c4-chat"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="underline">GitHub</a
+				class="font-semibold text-center flex-grow">GitHub</a
 			>
 
-			<Separator orientation="vertical" class="mx-2" />
-
-			<p class="text-xs text-center">
-				Made by <a href="https://calebirwin.ca" class="underline">Caleb</a> in 🇨🇦
+			<p class="text-center flex-grow">
+				Made by <a href="https://calebirwin.ca" class="font-semibold">Caleb</a> in 🇨🇦
 			</p>
 		</div>
 	</Sidebar.Footer>
