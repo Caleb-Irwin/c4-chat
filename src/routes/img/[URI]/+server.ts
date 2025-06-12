@@ -1,6 +1,17 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+export const OPTIONS: RequestHandler = async () => {
+    return new Response(null, {
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '86400'
+        }
+    });
+};
+
 export const GET: RequestHandler = async ({ params, url }) => {
     const { URI } = params;
 
@@ -37,13 +48,20 @@ export const GET: RequestHandler = async ({ params, url }) => {
         // Get the image data
         const imageBuffer = await response.arrayBuffer();
 
+        // Generate ETag for better caching
+        const etag = `"${Buffer.from(imageUrl).toString('base64').slice(0, 16)}"`;
+
         // Return the image with caching headers for 24 hours
         return new Response(imageBuffer, {
             headers: {
                 'Content-Type': contentType,
                 'Cache-Control': 'public, max-age=86400', // 24 hours = 86400 seconds
                 'Expires': new Date(Date.now() + 86400000).toUTCString(), // 24 hours from now
-                'Content-Length': imageBuffer.byteLength.toString()
+                'Content-Length': imageBuffer.byteLength.toString(),
+                'ETag': etag,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type'
             }
         });
     } catch (err) {

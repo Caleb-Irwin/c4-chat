@@ -14,6 +14,7 @@
 		auth = useAuth();
 
 	const isAnonymous = $derived(user.row ? user.row.isAnonymous : false);
+	const avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
 
 	let isSigningOut = $state(false);
 	$effect(() => {
@@ -50,16 +51,10 @@
 			{/if}
 
 			<div class="flex items-center min-h-9">
-				<img
-					src={user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : undefined}
-					class="hidden"
-					alt="User Avatar"
-				/>
 				<Avatar.Root>
-					<Avatar.Image
-						src={user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : undefined}
-						alt="User Avatar"
-					/>
+					{#if avatarSrc}
+						<Avatar.Image src={avatarSrc} alt="User Avatar" />
+					{/if}
 					<Avatar.Fallback>{user.row ? (user.row?.name?.[0] ?? 'A') : ''}</Avatar.Fallback>
 				</Avatar.Root>
 				<p class="flex-grow px-2 font-semibold text-accent-foreground">
