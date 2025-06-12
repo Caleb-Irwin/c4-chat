@@ -34,7 +34,7 @@
 		</div>
 		<div class="w-full flex justify-center px-2">
 			<div class="relative w-full max-w-3xl">
-				<div class="absolute -bottom-2 w-full">
+				<div class="absolute -bottom-6 w-full">
 					<ChatInput />
 				</div>
 			</div>

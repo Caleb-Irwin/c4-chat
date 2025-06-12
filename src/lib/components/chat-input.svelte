@@ -10,9 +10,9 @@
 	let {}: {} = $props();
 </script>
 
-<div class="p-2 pb-0 rounded-xl bg-sidebar shadow-sm">
+<div class="p-2 rounded-xl bg-sidebar shadow-sm">
 	<div
-		class="w-full bg-background/30 text-card-foreground flex flex-col rounded-xl rounded-b-none shadow-sm"
+		class="w-full bg-background/30 text-card-foreground flex flex-col rounded-xl pb-1.5 shadow-sm"
 	>
 		<div class="p-3 pb-0">
 			<Textarea
