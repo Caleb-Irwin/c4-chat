@@ -24,6 +24,7 @@
 		<Search />
 	</Button>
 	<Button
+		href="/"
 		variant="ghost"
 		size="icon"
 		class="bg-sidebar transition-[width] overflow-hidden {sidebar.open && !sidebar.isMobile

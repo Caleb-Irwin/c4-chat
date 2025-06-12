@@ -9,7 +9,7 @@
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Settings from '@lucide/svelte/icons/settings';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
-	import OpenRouterIcon from './OpenRouterIcon.svelte';
+	import OpenRouterIcon from './OpenRouter.svelte';
 
 	const userInfo = useQuery(
 		api.user.getInfo,
