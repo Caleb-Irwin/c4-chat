@@ -9,6 +9,7 @@
 	import Pen from '@lucide/svelte/icons/pen';
 	import { useThreads } from '$lib/threads.svelte';
 	import Input from '../ui/input/input.svelte';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		thread: Doc<'threads'>;
@@ -64,7 +65,14 @@
 				<Pen />
 			</Button>
 		{:else}
-			<a href={`/chat/${thread._id}`} class="px-4 p-2 w-full block">
+			<a
+				href={`/chat/${thread._id}`}
+				class="px-4 p-2 w-full block"
+				data-sveltekit-preload-data="hover"
+				onmousedown={(_) => {
+					goto(`/chat/${thread._id}`);
+				}}
+			>
 				<span class="truncate block">{title}</span>
 			</a>
 		{/if}

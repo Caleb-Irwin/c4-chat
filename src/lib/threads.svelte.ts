@@ -5,7 +5,7 @@ import { api } from '../convex/_generated/api';
 import { browser } from '$app/environment';
 
 export const PAGE_SIZE = 100;
-const DEFAULT_KEY = '$_threads',
+export const THREADS_DEFAULT_KEY = '$_threads',
     THREADS_ALL_KEY = 'threadsAll',
     THREADS_PINNED_KEY = 'threadsPinned';
 
@@ -13,6 +13,7 @@ interface Threads {
     all: Doc<'threads'>[] | [],
     pinned: Doc<'threads'>[] | [],
     _addInitialData: (data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) => Promise<void>,
+    _store: () => void
     loadMore: () => void,
     rename: (threadId: Id<"threads">, newTitle: string) => Promise<void>,
     del: (threadId: Id<"threads">) => Promise<void>,
@@ -41,6 +42,11 @@ class ThreadsClass implements Threads {
         this.initialDataPinned = resPinned ?? null;
     }
 
+    _store() {
+        localStorage.setItem(THREADS_ALL_KEY, JSON.stringify(this.all));
+        localStorage.setItem(THREADS_PINNED_KEY, JSON.stringify(this.pinned));
+    }
+
     loadMore() {
         if (this.queryAll.isLoading || (!this.queryAll.data?.continueCursor && !this.initialDataCursor)) return;
         this.cursor = this.queryAll.data?.continueCursor ?? this.initialDataCursor;
@@ -59,7 +65,7 @@ class ThreadsClass implements Threads {
     }
 }
 
-export const useThreads = (key = DEFAULT_KEY) => {
+export const useThreads = (key = THREADS_DEFAULT_KEY) => {
     const existing = getContext(key);
     if (existing) return existing as Threads;
     const threadsState = new ThreadsClass();

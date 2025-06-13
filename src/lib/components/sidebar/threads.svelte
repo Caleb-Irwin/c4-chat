@@ -2,8 +2,27 @@
 	import { useThreads } from '$lib/threads.svelte';
 	import ThreadGroup from './thread-group.svelte';
 	import type { Doc } from '../../../convex/_generated/dataModel';
+	import { preloadData } from '$app/navigation';
+	import { browser } from '$app/environment';
 
 	const threads = useThreads();
+
+	const preloaded = new Set<string>();
+	$effect(() => {
+		if (!browser) return;
+		const toPreload = [
+			...threads.pinned.map((thread) => thread._id),
+			...threads.all
+				.slice(0, threads.pinned.length >= 20 ? 0 : 20 - threads.pinned.length)
+				.map((thread) => thread._id)
+		];
+		for (const threadId of toPreload) {
+			if (!preloaded.has(threadId)) {
+				preloadData(`/chat/${threadId}`);
+				preloaded.add(threadId);
+			}
+		}
+	});
 
 	const buckets = $derived.by(() => {
 		const now = new Date(),
