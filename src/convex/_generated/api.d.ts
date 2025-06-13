@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as init from "../init.js";
 import type * as messages from "../messages.js";
 import type * as models from "../models.js";
+import type * as threads from "../threads.js";
 import type * as users from "../users.js";
 
 /**
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   init: typeof init;
   messages: typeof messages;
   models: typeof models;
+  threads: typeof threads;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

@@ -38,5 +38,8 @@
 
 			Sign out
 		</Button>
+		<p class="whitespace-pre-wrap p-1">
+			{JSON.stringify(user.row, null, 2)}
+		</p>
 	</div>
 {/if}

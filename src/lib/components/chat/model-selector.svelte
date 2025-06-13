@@ -24,8 +24,6 @@
 		})) ?? []
 	);
 
-	$effect(() => console.log('Frameworks:', frameworks.length));
-
 	let open = $state(false);
 	let value = $state('');
 	let triggerRef = $state<HTMLButtonElement>(null!);

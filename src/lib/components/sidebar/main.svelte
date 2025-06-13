@@ -8,8 +8,10 @@
 	import Button from '../ui/button/button.svelte';
 	import Input from '../ui/input/input.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
-	import Separator from '../ui/separator/separator.svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
+	import Threads from './threads.svelte';
 
 	const sidebar = useSidebar();
 
@@ -18,6 +20,11 @@
 			sidebar.setOpenMobile(false);
 		}
 	});
+
+	const client = useConvexClient();
+	function addMockThread() {
+		client.mutation(api.threads.mockCreateThread, {});
+	}
 </script>
 
 <div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm cursor-default">
@@ -65,27 +72,16 @@
 				type="text"
 				placeholder="Search your threads..."
 				tabindex={-1}
-				class="w-full pl-4 p-2 border-0 bg-sidebar dark:bg-sidebar text-sm focus-visible:ring-0 focus-visible:border-0"
+				class="w-full pl-4 p-2 border-0 bg-sidebar dark:bg-sidebar text-sm focus-visible:ring-0 focus-visible:border-0 shadow-none"
 			/>
 		</div>
 	</Sidebar.Header>
-	<Sidebar.Content>
-		<Sidebar.Group>
-			<Sidebar.GroupLabel>Today</Sidebar.GroupLabel>
-			<Sidebar.GroupContent>
-				<Sidebar.Menu>
-					<Sidebar.MenuItem>
-						<Sidebar.MenuButton class="px-4">
-							{#snippet child({ props })}
-								<a href={'/'} {...props}>
-									<span>{'Hello'}</span>
-								</a>
-							{/snippet}
-						</Sidebar.MenuButton>
-					</Sidebar.MenuItem>
-				</Sidebar.Menu>
-			</Sidebar.GroupContent>
-		</Sidebar.Group>
+	<Sidebar.Content class="gap-0 px-1">
+		<Threads />
+		<Button class="mx-3 mt-1" onclick={() => addMockThread()}>
+			<Plus />
+			<span class="hidden sm:inline">Mock Thread</span>
+		</Button>
 	</Sidebar.Content>
 	<Sidebar.Footer class="gap-0">
 		<Account />
