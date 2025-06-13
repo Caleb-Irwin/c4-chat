@@ -122,10 +122,32 @@ export const del = mutation({
         await ctx.db.delete(threadId);
 
         const messages = await ctx.db.query('messages')
-            .withIndex('by_user_thread', (q) => q.eq('user', userId).eq('thread', threadId))
+            .withIndex('by_thread_status', (q) => q.eq('thread', threadId))
             .collect()
         for (const message of messages) {
             await ctx.db.delete(message._id);
+        }
+    }
+});
+
+export const _addAnonymousThreads = mutation({
+    args: {
+        anonymousUserId: v.id("users"),
+    },
+    handler: async (ctx, { anonymousUserId }) => {
+        const userId = await getAuthUserId(ctx);
+        if (userId === null) throw new Error("User not authenticated.");
+
+        const anonymousUser = await ctx.db.get(anonymousUserId);
+        if (anonymousUser === null || anonymousUser.isAnonymous !== true) {
+            throw new Error("Anonymous user not found or not anonymous.");
+        }
+
+        const threads = await ctx.db.query('threads')
+            .withIndex('by_user_pinned_lastModified', (q) => q.eq('user', anonymousUserId))
+            .collect();
+        for (const thread of threads) {
+            await ctx.db.patch(thread._id, { user: userId });
         }
     }
 });

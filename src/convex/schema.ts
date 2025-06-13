@@ -35,7 +35,6 @@ export default defineSchema({
             filterFields: ["user"],
         }),
     messages: defineTable({
-        user: v.id("users"),
         thread: v.id("threads"),
         model: v.string(),
         role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system"), v.literal("developer")),
@@ -47,5 +46,5 @@ export default defineSchema({
             name: v.string(),
             type: v.string(),
         }))),
-    }).index("by_user_thread", ['user', 'thread']),
+    }).index("by_thread_status", ['thread', 'status']),
 });

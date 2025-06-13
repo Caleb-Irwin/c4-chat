@@ -1,6 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import type { Doc } from '../convex/_generated/dataModel';
-import { useQuery } from 'convex-svelte';
+import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 import { browser } from '$app/environment';
@@ -19,6 +19,7 @@ interface User {
 }
 
 class UserClass implements User {
+    private client = useConvexClient();
     private initialData: Doc<'users'> | null = $state<Doc<'users'> | null>(null);
     private query = $state(useQuery(api.users.getRow, {}));
     private auth = useAuth()
@@ -37,7 +38,9 @@ class UserClass implements User {
     _addAnonymousMessages = () => {
         if (this.row?.isAnonymous === false && localStorage.getItem('lastAnonymousUserId')) {
             const lastAnonymousUserId = localStorage.getItem('lastAnonymousUserId');
-            //TODO
+            if (lastAnonymousUserId) {
+                this.client.mutation(api.threads._addAnonymousThreads, { anonymousUserId: lastAnonymousUserId as any })
+            }
             localStorage.removeItem('lastAnonymousUserId');
         }
     };
