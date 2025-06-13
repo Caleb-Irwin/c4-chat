@@ -10,6 +10,10 @@
 	import { useThreads } from '$lib/threads.svelte';
 	import Input from '../ui/input/input.svelte';
 	import { goto } from '$app/navigation';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+
+	const sidebar = Sidebar.useSidebar();
 
 	interface Props {
 		thread: Doc<'threads'>;
@@ -21,7 +25,8 @@
 
 	let delDialogOpen = $state(false),
 		isEditing = $state(false),
-		title = $derived(thread.title);
+		title = $derived(thread.title),
+		menuOpen = $state(false);
 
 	$effect(() => {
 		if (isEditing) {
@@ -75,6 +80,20 @@
 			>
 				<span class="truncate block">{title}</span>
 			</a>
+			{#if sidebar.isMobile}
+				<Button
+					class="absolute right-0.5 top-1/2 -translate-y-1/2 m-0.5 w-7 h-7 bg-sidebar cursor-pointer {menuOpen
+						? 'hidden'
+						: ''}"
+					variant="ghost"
+					size="icon"
+					onclick={() => {
+						menuOpen = true;
+					}}
+				>
+					<ChevronLeft />
+				</Button>
+			{/if}
 		{/if}
 
 		<div
@@ -83,7 +102,9 @@
 				: ''}"
 		>
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer"
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					? 'w-7'
+					: ''}"
 				variant="ghost"
 				size="icon"
 				onclick={() => {
@@ -94,7 +115,9 @@
 			</Button>
 
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 mx-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 mx-0.5 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					? 'w-7'
+					: ''}"
 				variant="ghost"
 				size="icon"
 				onclick={() => {
@@ -109,7 +132,9 @@
 			</Button>
 
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer"
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					? 'w-7'
+					: ''}"
 				variant="ghost"
 				size="icon"
 				onclick={() => {
@@ -118,6 +143,19 @@
 			>
 				<X />
 			</Button>
+
+			{#if sidebar.isMobile && menuOpen}
+				<Button
+					class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
+					variant="ghost"
+					size="icon"
+					onclick={() => {
+						menuOpen = false;
+					}}
+				>
+					<ChevronRight />
+				</Button>
+			{/if}
 		</div>
 	</Sidebar.MenuButton>
 </Sidebar.MenuItem>
