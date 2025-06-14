@@ -47,11 +47,11 @@ export const pinned = query({
 
 export const search = query({
     args: {
-        searchQuery: v.string()
+        searchQuery: v.union(v.string(), v.null())
     },
     handler: async (ctx, args) => {
         const userId = await getAuthUserId(ctx);
-        if (userId === null) {
+        if (userId === null || args.searchQuery === null) {
             return null;
         }
 

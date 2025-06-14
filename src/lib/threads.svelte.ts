@@ -13,6 +13,9 @@ interface Threads {
     all: Doc<'threads'>[] | [],
     pinned: Doc<'threads'>[] | [],
     pageNumber: number,
+    searchQuery: string,
+    searchResults: Doc<'threads'>[] | null,
+    searchResultsIsLoading: boolean,
     _addInitialData: (data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) => Promise<void>,
     _store: () => void
     prevPage: () => void,
@@ -37,6 +40,11 @@ class ThreadsClass implements Threads {
     private initialDataPinned: Doc<'threads'>[] | null = $state<Doc<'threads'>[] | null>(null);
     private localStatePinned = $derived<Doc<'threads'>[] | null>(browser ? JSON.parse(localStorage.getItem(THREADS_PINNED_KEY) ?? 'null') : null);
     pinned = $derived<Doc<'threads'>[] | []>(this.queryPinned.data ?? this.initialDataPinned ?? this.localStatePinned ?? []);
+
+    searchQuery = $state('');
+    private searchQueryRes = $derived(useQuery(api.threads.search, { searchQuery: this.searchQuery.length >= 2 ? this.searchQuery : null }));
+    searchResults = $derived<Doc<'threads'>[] | null>(this.searchQuery.length >= 2 ? this.searchQueryRes.data ?? [] : null);
+    searchResultsIsLoading = $derived(this.searchQueryRes.isLoading);
 
     private client = useConvexClient();
 

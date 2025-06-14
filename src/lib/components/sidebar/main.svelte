@@ -12,6 +12,9 @@
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '../../../convex/_generated/api';
 	import Threads from './threads.svelte';
+	import { useThreads } from '$lib/threads.svelte';
+	import { tick } from 'svelte';
+	import { search } from '../../../convex/threads';
 
 	const sidebar = useSidebar();
 
@@ -25,6 +28,22 @@
 	function addMockThread() {
 		client.mutation(api.threads.mockCreateThread, {});
 	}
+
+	let searchTabIndex = $state(-1);
+	function openSearch() {
+		console.log('openSearch');
+		searchTabIndex = 1;
+		sidebar.toggle();
+		tick().then(() => {
+			if (!sidebar.isMobile) {
+				const searchInput = document.getElementById('searchThreads') as HTMLInputElement;
+				if (searchInput) searchInput.focus();
+			}
+			searchTabIndex = -1;
+		});
+	}
+
+	const threads = useThreads();
 </script>
 
 <div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm cursor-default">
@@ -36,6 +55,7 @@
 		!sidebar.isMobile
 			? 'w-0 p-0'
 			: 'w-9'}"
+		onclick={openSearch}
 	>
 		<Search />
 	</Button>
@@ -69,9 +89,11 @@
 		<div class="flex items-center mx-1 pl-2 border-b-1">
 			<Search size="16" />
 			<Input
+				id="searchThreads"
 				type="text"
 				placeholder="Search your threads..."
-				tabindex={-1}
+				tabindex={searchTabIndex}
+				bind:value={threads.searchQuery}
 				class="w-full pl-4 p-2 border-0 bg-sidebar dark:bg-sidebar text-sm focus-visible:ring-0 focus-visible:border-0 shadow-none"
 			/>
 		</div>

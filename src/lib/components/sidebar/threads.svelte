@@ -10,6 +10,13 @@
 
 	const threads = useThreads();
 
+	let searchRes: Doc<'threads'>[] | null = $state(null);
+	$effect(() => {
+		if (!threads.searchResultsIsLoading) {
+			searchRes = threads.searchResults;
+		}
+	});
+
 	const preloaded = new Set<string>();
 	$effect(() => {
 		if (!browser) return;
@@ -48,7 +55,7 @@
 			older: []
 		};
 
-		for (const thread of threads.all) {
+		for (const thread of searchRes ?? threads.all) {
 			const threadTime = thread.lastModified;
 			if (threadTime >= todayStart) {
 				result.today.push(thread);
@@ -67,14 +74,16 @@
 	});
 </script>
 
-<ThreadGroup label="Pinned" threads={threads.pinned} />
+{#if !threads.searchResults}
+	<ThreadGroup label="Pinned" threads={threads.pinned} />
+{/if}
 <ThreadGroup label="Today" threads={buckets.today} />
 <ThreadGroup label="Yesterday" threads={buckets.yesterday} />
 <ThreadGroup label="Last 7 Days" threads={buckets.last7Days} />
 <ThreadGroup label="Last 30 Days" threads={buckets.last30Days} />
 <ThreadGroup label="Older" threads={buckets.older} />
 
-{#if threads.all.length >= PAGE_SIZE || threads.pageNumber > 0}
+{#if (threads.all.length >= PAGE_SIZE || threads.pageNumber > 0) && !threads.searchResults}
 	<div class="flex justify-center items-center mt-4">
 		<Button
 			class="mr-2"
