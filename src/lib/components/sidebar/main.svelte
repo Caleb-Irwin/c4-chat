@@ -14,7 +14,7 @@
 	import Threads from './threads.svelte';
 	import { useThreads } from '$lib/threads.svelte';
 	import { tick } from 'svelte';
-	import { search } from '../../../convex/threads';
+	import { page } from '$app/state';
 
 	const sidebar = useSidebar();
 
@@ -60,12 +60,13 @@
 		<Search />
 	</Button>
 	<Button
-		href="/"
+		href="/chat"
 		variant="ghost"
 		size="icon"
 		class="bg-sidebar transition-[width] overflow-hidden {sidebar.open && !sidebar.isMobile
 			? 'w-0 p-0'
 			: 'w-9'}"
+		disabled={page.url.pathname === '/chat'}
 	>
 		<Plus />
 	</Button>
@@ -80,7 +81,7 @@
 		</h1>
 
 		<div class="flex p-1 pt-0">
-			<Button href="/" class="w-full">
+			<Button href="/" class="w-full" data-sveltekit-preload-data="hover">
 				<MessageSquare />
 				<span>New Chat</span>
 			</Button>
