@@ -19,7 +19,7 @@ export const load: LayoutServerLoad = async (event) => {
 
     async function getThreads() {
         const client = await clientPromise;
-        return await Promise.all([client.query(api.threads.get, { paginationOpts: { cursor: null, numItems: 100 } }), client.query(api.threads.pinned, {})]);
+        return await Promise.all([client.query(api.threads.get, { paginationOpts: { cursor: null, numItems: 200 } }), client.query(api.threads.pinned, {})]);
     }
 
     return { authState, ...(authState._state.token ? { userRow: getUserRow(), threads: getThreads() } : {}) };

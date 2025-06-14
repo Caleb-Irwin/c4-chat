@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { useThreads } from '$lib/threads.svelte';
+	import { PAGE_SIZE, useThreads } from '$lib/threads.svelte';
 	import ThreadGroup from './thread-group.svelte';
 	import type { Doc } from '../../../convex/_generated/dataModel';
 	import { preloadData } from '$app/navigation';
 	import { browser } from '$app/environment';
+	import Button from '../ui/button/button.svelte';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 
 	const threads = useThreads();
 
@@ -70,3 +73,19 @@
 <ThreadGroup label="Last 7 Days" threads={buckets.last7Days} />
 <ThreadGroup label="Last 30 Days" threads={buckets.last30Days} />
 <ThreadGroup label="Older" threads={buckets.older} />
+
+{#if threads.all.length >= PAGE_SIZE || threads.pageNumber > 0}
+	<div class="flex justify-center items-center mt-4">
+		<Button
+			class="mr-2"
+			variant="ghost"
+			onclick={() => threads.prevPage()}
+			disabled={threads.pageNumber === 0}><ChevronLeft /></Button
+		>
+		<Button
+			variant="ghost"
+			onclick={() => threads.nextPage()}
+			disabled={threads.all.length !== PAGE_SIZE}><ChevronRight /></Button
+		>
+	</div>
+{/if}
