@@ -4,7 +4,7 @@
 	import AppSidebar from '$lib/components/sidebar/main.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { useThreads } from '$lib/threads.svelte';
-	import { USER_KEY, useUser } from '$lib/user.svelte';
+	import { useUser } from '$lib/user.svelte';
 	import '../app.css';
 	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
@@ -18,7 +18,6 @@
 
 	$effect(() => {
 		if (browser && user.row && user._isAuthenticated) {
-			localStorage.setItem(USER_KEY, JSON.stringify(user.row));
 			if (user.row.isAnonymous === true) {
 				localStorage.setItem('lastAnonymousUserId', user.row._id);
 			} else {
@@ -33,19 +32,8 @@
 		}
 	});
 
-	$effect(() => {
-		if (browser && user.row) {
-		}
-	});
-
 	const threads = useThreads();
 	threads._addInitialData(data.threads);
-
-	$effect(() => {
-		if (browser && threads.all && threads.pinned) {
-			threads._store();
-		}
-	});
 
 	useChat();
 </script>

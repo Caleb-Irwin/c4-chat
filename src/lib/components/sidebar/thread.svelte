@@ -13,6 +13,7 @@
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import { useChat } from '$lib/chats.svelte';
+	import { browser } from '$app/environment';
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -86,79 +87,81 @@
 			</a>
 		{/if}
 
-		<div
-			class="flex items-center justify-end absolute right-0.5 top-1/2 -translate-y-1/2 {isEditing
-				? 'hidden'
-				: ''}"
-		>
+		{#if browser}
 			<div
-				class="transition-[width] overflow-hidden w-0 h-7 animate-spin bg-sidebar inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
-					? 'w-7'
+				class="flex items-center justify-end absolute right-0.5 top-1/2 -translate-y-1/2 {isEditing
+					? 'hidden'
 					: ''}"
 			>
-				<LoaderCircle />
-			</div>
+				<div
+					class="transition-[width] overflow-hidden w-0 h-7 animate-spin bg-sidebar inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
+						? 'w-7'
+						: ''}"
+				>
+					<LoaderCircle />
+				</div>
 
-			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
-					? 'w-7'
-					: ''}"
-				variant="ghost"
-				size="icon"
-				onclick={() => {
-					isEditing = true;
-				}}
-			>
-				<Pen />
-			</Button>
-
-			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
-					? 'w-7'
-					: ''}"
-				variant="ghost"
-				size="icon"
-				onclick={() => {
-					threads.togglePin(thread._id, !thread.pinned);
-				}}
-			>
-				{#if thread.pinned}
-					<PinOff />
-				{:else}
-					<Pin />
-				{/if}
-			</Button>
-
-			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
-					? 'w-7'
-					: ''}"
-				variant="ghost"
-				size="icon"
-				onclick={() => {
-					delDialogOpen = true;
-				}}
-			>
-				<X />
-			</Button>
-
-			{#if sidebar.isMobile}
 				<Button
-					class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+						? 'w-7'
+						: ''}"
 					variant="ghost"
 					size="icon"
 					onclick={() => {
-						menuOpen = !menuOpen;
+						isEditing = true;
 					}}
 				>
-					{#if menuOpen}
-						<ChevronRight />
+					<Pen />
+				</Button>
+
+				<Button
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+						? 'w-7'
+						: ''}"
+					variant="ghost"
+					size="icon"
+					onclick={() => {
+						threads.togglePin(thread._id, !thread.pinned);
+					}}
+				>
+					{#if thread.pinned}
+						<PinOff />
 					{:else}
-						<ChevronLeft />
+						<Pin />
 					{/if}
 				</Button>
-			{/if}
-		</div>
+
+				<Button
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+						? 'w-7'
+						: ''}"
+					variant="ghost"
+					size="icon"
+					onclick={() => {
+						delDialogOpen = true;
+					}}
+				>
+					<X />
+				</Button>
+
+				{#if sidebar.isMobile}
+					<Button
+						class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
+						variant="ghost"
+						size="icon"
+						onclick={() => {
+							menuOpen = !menuOpen;
+						}}
+					>
+						{#if menuOpen}
+							<ChevronRight />
+						{:else}
+							<ChevronLeft />
+						{/if}
+					</Button>
+				{/if}
+			</div>
+		{/if}
 	</Sidebar.MenuButton>
 </Sidebar.MenuItem>
 

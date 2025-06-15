@@ -7,9 +7,7 @@ import { page } from '$app/state';
 import { goto } from '$app/navigation';
 
 export const PAGE_SIZE = 200;
-export const THREADS_DEFAULT_KEY = '$_threads',
-    THREADS_ALL_KEY = 'threadsAll',
-    THREADS_PINNED_KEY = 'threadsPinned';
+export const THREADS_DEFAULT_KEY = '$_threads';
 
 interface Threads {
     all: Doc<'threads'>[] | [],
@@ -18,8 +16,7 @@ interface Threads {
     searchQuery: string,
     searchResults: Doc<'threads'>[] | null,
     searchResultsIsLoading: boolean,
-    _addInitialData: (data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) => Promise<void>,
-    _store: () => void
+    _addInitialData: (data: [typeof api.threads.get._returnType, typeof api.threads.pinned._returnType] | undefined) => void,
     prevPage: () => void,
     nextPage: () => void,
     rename: (threadId: Id<"threads">, newTitle: string) => Promise<void>,
@@ -35,13 +32,11 @@ class ThreadsClass implements Threads {
 
     private queryAll = $derived(useQuery(api.threads.get, { paginationOpts: { cursor: this.cursor, numItems: PAGE_SIZE } }, { keepPreviousData: true }));
     private initialDataAll: Doc<'threads'>[] | null = $state<Doc<'threads'>[] | null>(null);
-    private localStateAll = $derived<Doc<'threads'>[] | null>(browser ? JSON.parse(localStorage.getItem(THREADS_ALL_KEY) ?? 'null') : null);
-    all = $derived<Doc<'threads'>[] | []>(this.queryAll.data?.page ?? this.initialDataAll ?? this.localStateAll ?? []);
+    all = $derived<Doc<'threads'>[] | []>(this.queryAll.data?.page ?? this.initialDataAll ?? []);
 
     private queryPinned = useQuery(api.threads.pinned, {});
     private initialDataPinned: Doc<'threads'>[] | null = $state<Doc<'threads'>[] | null>(null);
-    private localStatePinned = $derived<Doc<'threads'>[] | null>(browser ? JSON.parse(localStorage.getItem(THREADS_PINNED_KEY) ?? 'null') : null);
-    pinned = $derived<Doc<'threads'>[] | []>(this.queryPinned.data ?? this.initialDataPinned ?? this.localStatePinned ?? []);
+    pinned = $derived<Doc<'threads'>[] | []>(this.queryPinned.data ?? this.initialDataPinned ?? []);
 
     searchQuery = $state('');
     private searchQueryRes = $derived(useQuery(api.threads.search, { searchQuery: this.searchQuery.length >= 2 ? this.searchQuery : null }));
@@ -50,15 +45,10 @@ class ThreadsClass implements Threads {
 
     private client = useConvexClient();
 
-    async _addInitialData(data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) {
-        const [resAll, resPinned] = await data ?? [null, null];
+    _addInitialData(data: [typeof api.threads.get._returnType, typeof api.threads.pinned._returnType] | undefined) {
+        const [resAll, resPinned] = data ?? [null, null];
         this.initialDataAll = resAll?.page ?? null;
         this.initialDataPinned = resPinned ?? null;
-    }
-
-    _store() {
-        localStorage.setItem(THREADS_ALL_KEY, JSON.stringify(this.all));
-        localStorage.setItem(THREADS_PINNED_KEY, JSON.stringify(this.pinned));
     }
 
     prevPage() {

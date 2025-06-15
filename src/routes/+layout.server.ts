@@ -10,17 +10,21 @@ export const load: LayoutServerLoad = async (event) => {
     const authState = await getAuthState(event);
 
     const { createConvexHttpClient } = createConvexAuthHandlers();
-    const clientPromise = createConvexHttpClient(event);
+    const client = await createConvexHttpClient(event);
 
     async function getUserRow() {
-        const client = await clientPromise;
         return await client.query(api.users.getRow, {});
     }
 
     async function getThreads() {
-        const client = await clientPromise;
         return await Promise.all([client.query(api.threads.get, { paginationOpts: { cursor: null, numItems: 200 } }), client.query(api.threads.pinned, {})]);
     }
 
-    return { authState, ...(authState._state.token ? { userRow: getUserRow(), threads: getThreads() } : {}) };
+    async function singlePromise() {
+        if (!authState._state.token) return {}
+        const [userRow, threads] = await Promise.all([getUserRow(), getThreads()]);
+        return { userRow, threads };
+    }
+
+    return { authState, ...await singlePromise() };
 };

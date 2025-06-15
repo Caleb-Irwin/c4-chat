@@ -7,7 +7,6 @@ import { pushState } from '$app/navigation';
 
 interface Chat {
     _addInitialData: (threadId: Id<'threads'>, data: Doc<'messages'>[]) => Promise<void>,
-    _store: () => void,
     changeThread: (threadId: Id<'threads'> | null) => void,
     sendMessage: (message: string, model: string) => Promise<void>,
     threadId: Id<'threads'> | null,
@@ -33,10 +32,6 @@ class ChatClass implements Chat {
         }
     }
 
-    _store() {
-
-    }
-
     changeThread(threadId: Id<'threads'> | null) {
         this.threadId = threadId;
     }
@@ -44,6 +39,7 @@ class ChatClass implements Chat {
     async sendMessage(message: string, model: string): Promise<void> {
         if (!this.threadId) {
             this.threadId = await this.client.mutation(api.threads.create, {});
+            this.changeThread(this.threadId);
             if (browser) pushState(`/chat/${this.threadId}`, {});
         }
 
