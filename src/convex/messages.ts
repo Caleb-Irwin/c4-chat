@@ -20,105 +20,87 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
     }
 
     const req = await request.json();
-
     console.log('Request:', req);
 
-    const { readable, writable } = new TransformStream<string, string>();
-    const writer = writable.getWriter();
+    const body = {
+        model: 'google/gemini-2.0-flash-001',
+        messages: [{ role: 'user', content: 'Write a 2 sentence story' }],
+        stream: true,
+    };
+    const KEY = process.env.OPENROUTER_API_KEY;
 
-    const { res, controller } = await startResponse(process.env.OPENROUTER_API_KEY!) ?? { res: null, controller: null };
-
-    if (res) {
-        convertStream(res, writer);
-    }
-
-    return new Response(readable, {
-        status: 200,
-        headers: new Headers({
-            "Access-Control-Allow-Origin": process.env.SITE_URL!,
-            Vary: "origin",
-        })
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
     });
-});
 
-async function startResponse(openRouterKey: string) {
-    const controller = new AbortController();
-    try {
-        console.log('Starting response');
-
-        const res = await fetch(
-            'https://openrouter.ai/api/v1/chat/completions',
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${openRouterKey!}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'google/gemini-2.0-flash-001',
-                    messages: [{ role: 'user', content: 'Write a 2 sentence story' }],
-                    stream: true,
-                }),
-                signal: controller.signal,
-            },
-        );
-
-        return { res, controller };
-    } catch (error) {
-        if ((error as any)?.name === 'AbortError') {
-            console.log('Stream cancelled');
-        } else {
-            console.error('Error starting response:', error);
-            throw error;
-        }
-    }
-}
-
-async function convertStream(res: Response, writer: WritableStreamDefaultWriter<string>) {
-    const reader = res.body?.getReader();
+    const reader = response.body?.getReader();
     if (!reader) {
         throw new Error('Response body is not readable');
     }
 
-    const decoder = new TextDecoder();
-    let buffer = '';
+    let { readable, writable } = new TransformStream();
+    let writer = writable.getWriter();
 
+    const resString = await processStream(reader, writer);
+    console.log('Processed response:', resString);
+
+    void writer.close();
+
+    return new Response(readable, {
+        status: 200,
+        headers: new Headers({
+            "Content-Type": "text/plain",
+        })
+    });
+});
+
+async function processStream(
+    resReader: ReadableStreamDefaultReader<Uint8Array>,
+    outputWriter: WritableStreamDefaultWriter<Uint8Array>
+): Promise<string> {
+    const resObj = { buffer: '', completeString: '' }, decoder = new TextDecoder(), encoder = new TextEncoder();
     try {
         while (true) {
-            const { done, value } = await reader.read();
+            const { done, value } = await resReader.read();
             if (done) break;
 
             // Append new chunk to buffer
-            buffer += decoder.decode(value, { stream: true });
+            resObj.buffer += decoder.decode(value, { stream: true });
 
             // Process complete lines from buffer
-            while (true) {
-                const lineEnd = buffer.indexOf('\n');
-                if (lineEnd === -1) break;
+            await processLines();
+        }
+    } finally {
+        resReader.cancel();
+    }
 
-                const line = buffer.slice(0, lineEnd).trim();
-                buffer = buffer.slice(lineEnd + 1);
+    async function processLines(): Promise<void> {
+        while (true) {
+            const lineEnd = resObj.buffer.indexOf('\n');
+            if (lineEnd === -1) break;
 
-                if (line.startsWith('data: ')) {
-                    const data = line.slice(6);
-                    if (data === '[DONE]') break;
+            const line = resObj.buffer.slice(0, lineEnd).trim();
+            resObj.buffer = resObj.buffer.slice(lineEnd + 1);
 
-                    try {
-                        const parsed = JSON.parse(data);
-                        const content = parsed.choices[0].delta.content;
-                        if (content) {
-                            await writer.write(content);
-                            console.log(content);
-                        }
-                    } catch (e) {
-                        // Ignore invalid JSON
+            if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') return;
+
+                try {
+                    const parsed = JSON.parse(data);
+                    const content = parsed.choices[0].delta.content;
+                    if (content) {
+                        resObj.completeString += content;
+                        outputWriter.write(encoder.encode(content));
                     }
+                } catch (e) {
+                    // Ignore invalid JSON
                 }
             }
         }
-    } finally {
-        reader.cancel();
-        await writer.close();
     }
 
+    return resObj.completeString;
 }
