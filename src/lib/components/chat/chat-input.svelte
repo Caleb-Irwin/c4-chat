@@ -6,8 +6,12 @@
 	import Brain from '@lucide/svelte/icons/brain';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
+	import { PUBLIC_CONVEX_URL } from '$env/static/public';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
 
 	let {}: {} = $props();
+
+	const auth = useAuth();
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-sidebar shadow-sm">
@@ -39,7 +43,21 @@
 				<span class="hidden lg:inline"> Attach </span>
 			</Button>
 			<div class="flex-grow"></div>
-			<Button size="icon" class="ml-1 flex-shrink-0"><ArrowUp width="24" height="24" /></Button>
+			<Button
+				size="icon"
+				class="ml-1 flex-shrink-0"
+				onclick={async () => {
+					const res = await fetch('/chat/postMessage', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({})
+					});
+					const data = await res.json();
+					console.log(data);
+				}}><ArrowUp width="24" height="24" /></Button
+			>
 		</div>
 	</div>
 </div>

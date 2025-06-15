@@ -31,7 +31,6 @@
 
 	let searchTabIndex = $state(-1);
 	function openSearch() {
-		console.log('openSearch');
 		searchTabIndex = 1;
 		sidebar.toggle();
 		tick().then(() => {

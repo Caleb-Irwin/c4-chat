@@ -37,8 +37,9 @@ export default defineSchema({
     messages: defineTable({
         thread: v.id("threads"),
         model: v.string(),
-        role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system"), v.literal("developer")),
         status: v.union(v.literal("pending"), v.literal('generating'), v.literal('stopped'), v.literal("completed"), v.literal("error")),
+        userMessage: v.string(),
+        developerMessage: v.optional(v.string()),
         message: v.string(),
         messageHTML: v.optional(v.string()),
         attachments: v.optional(v.array(v.object({
