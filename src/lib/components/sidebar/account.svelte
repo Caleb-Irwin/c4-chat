@@ -11,6 +11,14 @@
 
 <div class="flex flex-col items-center justify-center">
 	<div class="p-1 w-full">
+		{#if user.row?.freeRequestsLeft && user.row?.freeRequestsLeft <= 10}
+			<p
+				class="text-xs text-center p-0.5 {user.isAnonymous ? 'py-2' : 'py-1'} text-muted-foreground"
+			>
+				You have <span class="font-semibold">{user.row?.freeRequestsLeft}</span> free requests left
+			</p>
+		{/if}
+
 		{#if user.isAnonymous}
 			<Button
 				class="w-full cursor-pointer"

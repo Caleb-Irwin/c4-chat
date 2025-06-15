@@ -12,6 +12,7 @@
 	import { goto } from '$app/navigation';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -80,20 +81,6 @@
 			>
 				<span class="truncate block">{title}</span>
 			</a>
-			{#if sidebar.isMobile}
-				<Button
-					class="absolute right-0.5 top-1/2 -translate-y-1/2 m-0.5 w-7 h-7 bg-sidebar cursor-pointer {menuOpen
-						? 'hidden'
-						: ''}"
-					variant="ghost"
-					size="icon"
-					onclick={() => {
-						menuOpen = true;
-					}}
-				>
-					<ChevronLeft />
-				</Button>
-			{/if}
 		{/if}
 
 		<div
@@ -101,8 +88,16 @@
 				? 'hidden'
 				: ''}"
 		>
+			<div
+				class="transition-[width] overflow-hidden w-0 h-7 animate-spin bg-sidebar inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
+					? 'w-7'
+					: ''}"
+			>
+				<LoaderCircle />
+			</div>
+
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
 					? 'w-7'
 					: ''}"
 				variant="ghost"
@@ -115,7 +110,7 @@
 			</Button>
 
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 mx-0.5 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
 					? 'w-7'
 					: ''}"
 				variant="ghost"
@@ -132,7 +127,7 @@
 			</Button>
 
 			<Button
-				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+				class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
 					? 'w-7'
 					: ''}"
 				variant="ghost"
@@ -144,16 +139,20 @@
 				<X />
 			</Button>
 
-			{#if sidebar.isMobile && menuOpen}
+			{#if sidebar.isMobile}
 				<Button
 					class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
 					variant="ghost"
 					size="icon"
 					onclick={() => {
-						menuOpen = false;
+						menuOpen = !menuOpen;
 					}}
 				>
-					<ChevronRight />
+					{#if menuOpen}
+						<ChevronRight />
+					{:else}
+						<ChevronLeft />
+					{/if}
 				</Button>
 			{/if}
 		</div>

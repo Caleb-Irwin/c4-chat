@@ -9,8 +9,6 @@
 	import Input from '../ui/input/input.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 	import { afterNavigate } from '$app/navigation';
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '../../../convex/_generated/api';
 	import Threads from './threads.svelte';
 	import { useThreads } from '$lib/threads.svelte';
 	import { tick } from 'svelte';
@@ -23,11 +21,6 @@
 			sidebar.setOpenMobile(false);
 		}
 	});
-
-	const client = useConvexClient();
-	function addMockThread() {
-		client.mutation(api.threads.mockCreateThread, {});
-	}
 
 	let searchTabIndex = $state(-1);
 	function openSearch() {
@@ -100,10 +93,6 @@
 	</Sidebar.Header>
 	<Sidebar.Content class="gap-0 px-1">
 		<Threads />
-		<Button class="mx-3 mt-1" onclick={() => addMockThread()}>
-			<Plus />
-			<span class="hidden sm:inline">Mock Thread</span>
-		</Button>
 	</Sidebar.Content>
 	<Sidebar.Footer class="gap-0">
 		<Account />

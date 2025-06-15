@@ -3,6 +3,8 @@ import type { Doc, Id } from '../convex/_generated/dataModel';
 import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { browser } from '$app/environment';
+import { page } from '$app/state';
+import { goto } from '$app/navigation';
 
 export const PAGE_SIZE = 200;
 export const THREADS_DEFAULT_KEY = '$_threads',
@@ -82,6 +84,9 @@ class ThreadsClass implements Threads {
     }
 
     async del(threadId: Id<"threads">) {
+        if (page.url.pathname === `/chat/${threadId}`) {
+            if (browser) goto('/chat');
+        }
         await this.client.mutation(api.threads.del, { threadId });
     }
 
