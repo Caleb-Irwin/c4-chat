@@ -68,7 +68,7 @@
 </div>
 <Sidebar.Root>
 	<Sidebar.Header>
-		<h1 class="text-lg p-1 text-center">
+		<h1 class="text-lg p-1 text-center text-primary">
 			<span class="font-semibold">C4</span> Chat
 		</h1>
 

@@ -102,7 +102,7 @@
 				</div>
 
 				<Button
-					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
 						? 'w-7'
 						: ''}"
 					variant="ghost"
@@ -115,7 +115,7 @@
 				</Button>
 
 				<Button
-					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
 						? 'w-7'
 						: ''}"
 					variant="ghost"
@@ -132,7 +132,7 @@
 				</Button>
 
 				<Button
-					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar cursor-pointer {menuOpen
+					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
 						? 'w-7'
 						: ''}"
 					variant="ghost"
@@ -146,7 +146,7 @@
 
 				{#if sidebar.isMobile}
 					<Button
-						class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar cursor-pointer"
+						class="w-7 h-7 ml-0.5 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer"
 						variant="ghost"
 						size="icon"
 						onclick={() => {
