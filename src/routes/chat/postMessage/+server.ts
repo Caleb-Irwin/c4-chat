@@ -5,7 +5,6 @@ import type { RequestHandler, RequestEvent } from './$types';
 const { getAuthState } = createConvexAuthHooks();
 
 export const POST = (async (event: RequestEvent) => {
-    // Get auth state safely
     const authState = await getAuthState(event);
     const token = authState?._state?.token;
 
@@ -13,31 +12,34 @@ export const POST = (async (event: RequestEvent) => {
         return new Response('Authentication required', { status: 401 });
     }
 
-    // Construct the correct Convex HTTP URL
     const convexHttpUrl = PUBLIC_CONVEX_URL.replace('.cloud', '.site') + '/postMessage';
-    console.log('Fetching:', convexHttpUrl);
 
-    const requestBody = await event.request.text();
-    console.log('Request body:', requestBody);
-
+    const requestBody = await event.request.json();
     const res = await fetch(convexHttpUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': 'SvelteKit-Server',
         },
         body: JSON.stringify(requestBody)
     });
 
-    const responseText = await res.text();
-    console.log('Response:', responseText);
+    if (!res.ok) {
+        console.error('Error in response:', res.status, res.statusText);
+        const errorText = await res.text();
+        console.error('Response error text:', errorText);
+        return new Response(errorText, { status: res.status });
+    }
 
-    return new Response(responseText, {
+    if (!res.body) {
+        return new Response('No response body', { status: 500 });
+    }
+
+    return new Response(res.body, {
         status: 200,
         headers: new Headers({
             "Content-Type": "text/plain",
+            "messageId": res.headers.get("messageId")!
         })
     });
-
 }) satisfies RequestHandler;

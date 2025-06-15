@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 import { openRouterModelsTable } from "./init";
 
+export const messageStatusUnion = v.union(v.literal("pending"), v.literal('generating'), v.literal('stopped'), v.literal("completed"), v.literal("error"));
+
 export default defineSchema({
     ...authTables,
     users: defineTable({
@@ -17,7 +19,7 @@ export default defineSchema({
         googleConnected: v.optional(v.boolean()),
         openRouterConnected: v.optional(v.boolean()),
         accountCreditsInCentThousandths: v.optional(v.number()),
-        freeRequestsUsed: v.optional(v.number()),
+        freeRequestsLeft: v.optional(v.number()),
         freeRequestsBillingCycle: v.optional(v.string()),
         customSystemPrompt: v.optional(v.string()),
         openRouterKey: v.optional(v.string()),
@@ -37,7 +39,7 @@ export default defineSchema({
     messages: defineTable({
         thread: v.id("threads"),
         model: v.string(),
-        status: v.union(v.literal("pending"), v.literal('generating'), v.literal('stopped'), v.literal("completed"), v.literal("error")),
+        status: messageStatusUnion,
         userMessage: v.string(),
         developerMessage: v.optional(v.string()),
         message: v.string(),

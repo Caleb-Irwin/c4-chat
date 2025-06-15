@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc, Id } from "./_generated/dataModel";
-import { mutation, MutationCtx, query } from "./_generated/server";
+import { internalAction, mutation, MutationCtx, query } from "./_generated/server";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
 
 export const get = query({
@@ -171,6 +171,16 @@ export const createThread = async (ctx: MutationCtx, { initialTitle = 'New Threa
 export const updateThread = async (ctx: MutationCtx, { threadId, generating }: { threadId: Id<"threads">, generating: boolean }) => {
     await ctx.db.patch(threadId, { lastModified: Date.now(), generating });
 };
+
+export const nameThread = internalAction({
+    args: {
+        threadId: v.id("threads"),
+        message: v.string(),
+    },
+    handler: async (ctx, args) => {
+
+    }
+});
 
 export const mockCreateThread = mutation({
     handler: async (ctx) => {

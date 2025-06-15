@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useChatRegistry } from '$lib/chats.svelte';
 	import ChatInput from '$lib/components/chat/chat-input.svelte';
 	import type { Snippet } from 'svelte';
 
@@ -7,6 +8,8 @@
 	}
 
 	let { children }: Props = $props();
+
+	useChatRegistry();
 </script>
 
 <div class="flex-grow w-full overflow- max:h-screen flex justify-center">

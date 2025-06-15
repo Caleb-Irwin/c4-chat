@@ -1,34 +1,82 @@
 import { getContext, setContext } from 'svelte';
-import type { Doc, Id } from '../convex/_generated/dataModel';
-import { useConvexClient, useQuery } from 'convex-svelte';
-import { api } from '../convex/_generated/api';
-import { browser } from '$app/environment';
+import type { Id } from '../convex/_generated/dataModel';
+import { useConvexClient } from 'convex-svelte';
 
-export const PAGE_SIZE = 200;
-export const CHAT_KEY_PREFIX = '$_chat:';
-
-interface Chats {
-    _addInitialData: (data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) => Promise<void>,
-    _store: () => void,
+interface ChatRegistry {
+    chats: Chat[];
+    currentId: Id<'threads'> | null;
+    setCurrent: (threadId: Id<'threads'>) => void;
+    get(threadId: Id<'threads'>): Chat;
 }
 
-class ChatsClass implements Chats {
+class ChatRegistryClass implements ChatRegistry {
+    chats = $state([] as Chat[]);
+    currentId: Id<'threads'> | null = $state(null);
+
+    setCurrent(threadId: Id<'threads'>) {
+        this.currentId = threadId;
+
+    }
+
+    get(threadId: Id<'threads'>): Chat {
+        const existing = this.chats.find(chat => chat.threadId === threadId) || null;
+        if (existing) {
+            return existing;
+        }
+        const chat = new ChatsClass(threadId);
+        this.chats.push(chat);
+        return chat;
+    }
+}
+
+interface Chat {
+    _addInitialData: (data: Promise<undefined> | undefined) => Promise<void>,
+    _store: () => void,
+    sendMessage: (message: string, model: string) => Promise<void>,
+    threadId: Id<'threads'>;
+}
+
+class ChatsClass implements Chat {
+    threadId: Id<'threads'>;
+    constructor(threadId: Id<'threads'>) {
+        this.threadId = threadId;
+    }
+
     private client = useConvexClient();
 
-    async _addInitialData(data: Promise<[typeof api.threads.get._returnType, typeof api.threads.pinned._returnType]> | undefined) {
+    async _addInitialData(data: Promise<undefined> | undefined) {
 
     }
 
     _store() {
 
     }
+
+    async sendMessage(message: string, model: string): Promise<void> {
+        const res = await fetch('/chat/postMessage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                threadId: this.threadId,
+                userMessage: message,
+                model
+            })
+        });
+
+        const resText = await res.text();
+
+        console.log(resText);
+        alert('Message Response: ' + resText);
+    }
 }
 
-export const useChat = (threadId: Id<'threads'>, keyPrefix = CHAT_KEY_PREFIX) => {
-    const key = keyPrefix + threadId
+export const useChatRegistry = () => {
+    const key = '$_chatRegistry';
     const existing = getContext(key);
-    if (existing) return existing as Chats;
-    const chatsState = new ChatsClass();
+    if (existing) return existing as ChatRegistry;
+    const chatsState = new ChatRegistryClass();
     setContext(key, chatsState);
     return chatsState;
 };

@@ -6,12 +6,13 @@
 	import Brain from '@lucide/svelte/icons/brain';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
-	import { PUBLIC_CONVEX_URL } from '$env/static/public';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { useChatRegistry } from '$lib/chats.svelte';
 
 	let {}: {} = $props();
 
-	const auth = useAuth();
+	const chatRegistry = useChatRegistry();
+
+	let text = $state('');
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-sidebar shadow-sm">
@@ -24,6 +25,7 @@
 				id="chat-input"
 				class="p-0 rounded-none border-none bg-transparent dark:bg-transparent focus-visible:ring-0 resize-none max-h-60 min-h-12 shadow-none"
 				placeholder="Type your message here..."
+				bind:value={text}
 			></Textarea>
 		</div>
 		<div class="flex align-middle items-end p-2 pt-1 overflow-hidden">
@@ -46,17 +48,8 @@
 			<Button
 				size="icon"
 				class="ml-1 flex-shrink-0"
-				onclick={async () => {
-					const res = await fetch('/chat/postMessage', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({})
-					});
-					const data = await res.json();
-					console.log(data);
-				}}><ArrowUp width="24" height="24" /></Button
+				onclick={() => chatRegistry.get(chatRegistry.currentId as any).sendMessage(text, 'TODO')}
+				><ArrowUp width="24" height="24" /></Button
 			>
 		</div>
 	</div>
