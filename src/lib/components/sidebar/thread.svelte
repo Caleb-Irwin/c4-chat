@@ -9,10 +9,10 @@
 	import Pen from '@lucide/svelte/icons/pen';
 	import { useThreads } from '$lib/threads.svelte';
 	import Input from '../ui/input/input.svelte';
-	import { goto } from '$app/navigation';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+	import { useChat } from '$lib/chats.svelte';
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -23,6 +23,7 @@
 	let { thread }: Props = $props();
 
 	const threads = useThreads();
+	const chat = useChat();
 
 	let delDialogOpen = $state(false),
 		isEditing = $state(false),
@@ -74,9 +75,11 @@
 			<a
 				href={`/chat/${thread._id}`}
 				class="px-4 p-2 w-full block"
-				data-sveltekit-preload-data="hover"
+				onclick={() => {
+					chat.changeThread(thread._id);
+				}}
 				onmousedown={(_) => {
-					goto(`/chat/${thread._id}`);
+					chat.changeThread(thread._id);
 				}}
 			>
 				<span class="truncate block">{title}</span>

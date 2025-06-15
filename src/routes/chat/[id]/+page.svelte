@@ -5,8 +5,10 @@
 
 	let { data }: PageProps = $props();
 
-	const threadId = data.threadId;
-
 	const chat = useChat();
-	chat._addInitialData(threadId, undefined);
+	chat._addInitialData(data.threadId, data.messages); // Intentionally not reactive
+
+	$effect(() => {
+		if (data.threadId === chat.threadId) chat._addInitialData(data.threadId, data.messages);
+	});
 </script>

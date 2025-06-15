@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { useChat } from '$lib/chats.svelte';
 	import AppSidebar from '$lib/components/sidebar/main.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { useThreads } from '$lib/threads.svelte';
@@ -45,6 +46,8 @@
 			threads._store();
 		}
 	});
+
+	useChat();
 </script>
 
 <ModeWatcher />

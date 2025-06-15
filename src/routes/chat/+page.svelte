@@ -3,5 +3,5 @@
 
 	let {} = $props();
 
-	useChat()._addInitialData(null);
+	useChat().changeThread(null);
 </script>

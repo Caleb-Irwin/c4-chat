@@ -3,10 +3,12 @@ import type { Doc, Id } from '../convex/_generated/dataModel';
 import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { browser } from '$app/environment';
+import { pushState } from '$app/navigation';
 
 interface Chat {
-    _addInitialData: (threadId: Id<'threads'> | null, data?: Promise<undefined>) => Promise<void>,
+    _addInitialData: (threadId: Id<'threads'>, data: Doc<'messages'>[]) => Promise<void>,
     _store: () => void,
+    changeThread: (threadId: Id<'threads'> | null) => void,
     sendMessage: (message: string, model: string) => Promise<void>,
     threadId: Id<'threads'> | null,
     isEmpty: boolean;
@@ -18,15 +20,16 @@ class ChatClass implements Chat {
     threadId: Id<'threads'> | null = $state(null);
     private client = useConvexClient();
     private completedMessagesQuery = $derived(this.threadId ? useQuery(api.messages.getFinishedMessages, { threadId: this.threadId }, { keepPreviousData: true }) : null);
-    messages = $derived<Doc<'messages'>[] | null>(this.completedMessagesQuery?.data ?? null);
+    private completedMessagesInitialData: Doc<'messages'>[] | null = $state<Doc<'messages'>[] | null>(null);
+    private completedMessages = $derived<Doc<'messages'>[] | null>(this.completedMessagesQuery?.data ?? this.completedMessagesInitialData ?? null);
+    messages = $derived<Doc<'messages'>[] | null>(this.completedMessages ?? null);
     isEmpty = $derived(this.threadId === null || (!this.completedMessagesQuery?.isLoading && this.messages?.length === 0));
     isLoading = $derived(this.completedMessagesQuery?.isLoading ?? true);
 
-    async _addInitialData(threadId: Id<'threads'> | null, data?: Promise<undefined>) {
-        console.log('Adding initial data to chat:', threadId);
+    async _addInitialData(threadId: Id<'threads'>, data: Doc<'messages'>[]) {
         this.threadId = threadId;
         if (data) {
-            await data;
+            this.completedMessagesInitialData = data;
         }
     }
 
@@ -34,10 +37,14 @@ class ChatClass implements Chat {
 
     }
 
+    changeThread(threadId: Id<'threads'> | null) {
+        this.threadId = threadId;
+    }
+
     async sendMessage(message: string, model: string): Promise<void> {
         if (!this.threadId) {
             this.threadId = await this.client.mutation(api.threads.create, {});
-            if (browser) history.pushState({}, '', `/chat/${this.threadId}`);
+            if (browser) pushState(`/chat/${this.threadId}`, {});
         }
 
         const res = await fetch('/chat/postMessage', {
