@@ -1,9 +1,30 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { httpAction, internalAction, internalMutation, internalQuery, query } from ".././_generated/server";
+import { httpAction, internalAction, internalMutation, query } from ".././_generated/server";
 import { ConvexError, v } from "convex/values";
 import { validate } from "convex-helpers/validators";
 import { internal } from ".././_generated/api";
 import { streamedOpenRouterRequest } from "./streamedRequest";
+
+export const getFinishedMessages = query({
+    args: {
+        threadId: v.id("threads"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (userId === null) throw new Error("User not authenticated.");
+        const thread = await ctx.db.get(args.threadId);
+        if (!thread) {
+            throw new Error('Thread not found');
+        }
+        if (thread.user !== userId) {
+            throw new Error('User does not have permission to access this thread');
+        }
+        const messages = await ctx.db.query("messages")
+            .withIndex("by_thread_status", (q) => q.eq("thread", args.threadId)/*.eq("status", "completed")*/)
+            .collect();
+        return messages;
+    }
+});
 
 const messageRequestObject = {
     threadId: v.id("threads"),

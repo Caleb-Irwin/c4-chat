@@ -1,6 +1,6 @@
 import { getContext, setContext } from 'svelte';
-import type { Id } from '../convex/_generated/dataModel';
-import { useConvexClient } from 'convex-svelte';
+import type { Doc, Id } from '../convex/_generated/dataModel';
+import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { browser } from '$app/environment';
 
@@ -8,14 +8,22 @@ interface Chat {
     _addInitialData: (threadId: Id<'threads'> | null, data?: Promise<undefined>) => Promise<void>,
     _store: () => void,
     sendMessage: (message: string, model: string) => Promise<void>,
-    threadId: Id<'threads'> | null
+    threadId: Id<'threads'> | null,
+    isEmpty: boolean;
+    isLoading: boolean;
+    messages: Doc<'messages'>[] | null;
 }
 
 class ChatClass implements Chat {
-    threadId: Id<'threads'> | null = null
+    threadId: Id<'threads'> | null = $state(null);
     private client = useConvexClient();
+    private completedMessagesQuery = $derived(this.threadId ? useQuery(api.messages.getFinishedMessages, { threadId: this.threadId }, { keepPreviousData: true }) : null);
+    messages = $derived<Doc<'messages'>[] | null>(this.completedMessagesQuery?.data ?? null);
+    isEmpty = $derived(this.threadId === null || (!this.completedMessagesQuery?.isLoading && this.messages?.length === 0));
+    isLoading = $derived(this.completedMessagesQuery?.isLoading ?? true);
 
     async _addInitialData(threadId: Id<'threads'> | null, data?: Promise<undefined>) {
+        console.log('Adding initial data to chat:', threadId);
         this.threadId = threadId;
         if (data) {
             await data;
@@ -44,10 +52,7 @@ class ChatClass implements Chat {
             })
         });
 
-        const resText = await res.text();
-
-        console.log(resText);
-        alert('Message Response: ' + resText);
+        await res.text();
     }
 }
 

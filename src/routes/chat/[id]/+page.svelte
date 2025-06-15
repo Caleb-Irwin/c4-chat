@@ -8,5 +8,5 @@
 	const threadId = data.threadId;
 
 	const chat = useChat();
-	chat._addInitialData(threadId, (async () => undefined)());
+	chat._addInitialData(threadId, undefined);
 </script>
