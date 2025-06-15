@@ -1,15 +1,8 @@
 <script lang="ts">
-	import { useChatRegistry } from '$lib/chats.svelte';
+	import { useChat } from '$lib/chats.svelte';
 	import ChatInput from '$lib/components/chat/chat-input.svelte';
-	import type { Snippet } from 'svelte';
 
-	interface Props {
-		children?: Snippet;
-	}
-
-	let { children }: Props = $props();
-
-	useChatRegistry();
+	useChat();
 </script>
 
 <div class="flex-grow w-full overflow- max:h-screen flex justify-center">
@@ -17,7 +10,24 @@
 		<div class="flex-grow w-full flex justify-center max-h-screen overflow-x-scroll px-2">
 			<div class="max-w-3xl w-full px-2">
 				<div class="h-8"></div>
-				{@render children?.()}
+				{#each Array(2) as _}
+					<div class="flex justify-end pt-8">
+						<div class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl">
+							Hello World
+						</div>
+					</div>
+					<div>
+						<p>Hello World from AI</p>
+					</div>
+					<div class="flex justify-end pt-8">
+						<div class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl">
+							Who are you?
+						</div>
+					</div>
+					<div>
+						<p>I'm C4 Chat.</p>
+					</div>
+				{/each}
 				<div class="h-[188px]"></div>
 			</div>
 		</div>

@@ -32,7 +32,7 @@ export const startMessage = internalMutation({
             throw new Error('Thread not found');
         }
         if (thread.title === 'New Thread') {
-            await ctx.scheduler.runAfter(0, internal.threads.nameThread, {
+            await ctx.scheduler.runAfter(0, internal.threads.generateThreadName, {
                 threadId: args.threadId,
                 message: args.userMessage.slice(0, 300)
             });

@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc, Id } from "./_generated/dataModel";
-import { internalAction, mutation, MutationCtx, query } from "./_generated/server";
+import { internalAction, internalMutation, mutation, MutationCtx, query } from "./_generated/server";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
+import { api, internal } from "./_generated/api";
 
 export const get = query({
     args: {
@@ -65,6 +66,22 @@ export const search = query({
         });
 
         return threads;
+    }
+});
+
+export const create = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await getAuthUserId(ctx);
+        if (userId === null) throw new Error("User not authenticated.");
+        const thread = await ctx.db.insert('threads', {
+            user: userId,
+            title: 'New Thread',
+            pinned: false,
+            generating: false,
+            lastModified: Date.now(),
+        });
+        return thread;
     }
 });
 
@@ -152,44 +169,42 @@ export const _addAnonymousThreads = mutation({
     }
 });
 
-export const createThread = async (ctx: MutationCtx, { initialTitle = 'New Thread', userId, generating = true }: {
-    initialTitle?: string
-    userId: Id<"users">
-    generating?: boolean
-}) => {
-    const thread = await ctx.db.insert('threads', {
-        user: userId,
-        title: initialTitle,
-        pinned: false,
-        generating,
-        lastModified: Date.now(),
-    });
-
-    return thread;
-}
-
 export const updateThread = async (ctx: MutationCtx, { threadId, generating }: { threadId: Id<"threads">, generating: boolean }) => {
     await ctx.db.patch(threadId, { lastModified: Date.now(), generating });
 };
 
-export const nameThread = internalAction({
+export const generateThreadName = internalAction({
     args: {
         threadId: v.id("threads"),
         message: v.string(),
     },
     handler: async (ctx, args) => {
-
+        const url = 'https://openrouter.ai/api/v1/completions';
+        const options = {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: "google/gemini-2.0-flash-lite-001", prompt: "Name thread. RETURN ONLY TITLE. First message: " + args.message, max_tokens: 40 })
+        };
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            const threadName = data.choices[0].text.trim();
+            await ctx.runMutation(internal.threads.setTitle, {
+                threadId: args.threadId,
+                title: threadName
+            });
+        } catch (error) {
+            console.error(error);
+        }
     }
 });
 
-export const mockCreateThread = mutation({
-    handler: async (ctx) => {
-        const userId = await getAuthUserId(ctx);
-        if (userId === null) throw new Error("User not authenticated.");
-
-        return createThread(ctx, {
-            userId,
-            generating: false
-        });
+export const setTitle = internalMutation({
+    args: {
+        threadId: v.id("threads"),
+        title: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.threadId, { title: args.title });
     }
 });

@@ -1,51 +1,25 @@
 import { getContext, setContext } from 'svelte';
 import type { Id } from '../convex/_generated/dataModel';
 import { useConvexClient } from 'convex-svelte';
-
-interface ChatRegistry {
-    chats: Chat[];
-    currentId: Id<'threads'> | null;
-    setCurrent: (threadId: Id<'threads'>) => void;
-    get(threadId: Id<'threads'>): Chat;
-}
-
-class ChatRegistryClass implements ChatRegistry {
-    chats = $state([] as Chat[]);
-    currentId: Id<'threads'> | null = $state(null);
-
-    setCurrent(threadId: Id<'threads'>) {
-        this.currentId = threadId;
-
-    }
-
-    get(threadId: Id<'threads'>): Chat {
-        const existing = this.chats.find(chat => chat.threadId === threadId) || null;
-        if (existing) {
-            return existing;
-        }
-        const chat = new ChatsClass(threadId);
-        this.chats.push(chat);
-        return chat;
-    }
-}
+import { api } from '../convex/_generated/api';
+import { browser } from '$app/environment';
 
 interface Chat {
-    _addInitialData: (data: Promise<undefined> | undefined) => Promise<void>,
+    _addInitialData: (threadId: Id<'threads'> | null, data?: Promise<undefined>) => Promise<void>,
     _store: () => void,
     sendMessage: (message: string, model: string) => Promise<void>,
-    threadId: Id<'threads'>;
+    threadId: Id<'threads'> | null
 }
 
-class ChatsClass implements Chat {
-    threadId: Id<'threads'>;
-    constructor(threadId: Id<'threads'>) {
-        this.threadId = threadId;
-    }
-
+class ChatClass implements Chat {
+    threadId: Id<'threads'> | null = null
     private client = useConvexClient();
 
-    async _addInitialData(data: Promise<undefined> | undefined) {
-
+    async _addInitialData(threadId: Id<'threads'> | null, data?: Promise<undefined>) {
+        this.threadId = threadId;
+        if (data) {
+            await data;
+        }
     }
 
     _store() {
@@ -53,6 +27,11 @@ class ChatsClass implements Chat {
     }
 
     async sendMessage(message: string, model: string): Promise<void> {
+        if (!this.threadId) {
+            this.threadId = await this.client.mutation(api.threads.create, {});
+            if (browser) history.pushState({}, '', `/chat/${this.threadId}`);
+        }
+
         const res = await fetch('/chat/postMessage', {
             method: 'POST',
             headers: {
@@ -72,11 +51,11 @@ class ChatsClass implements Chat {
     }
 }
 
-export const useChatRegistry = () => {
-    const key = '$_chatRegistry';
+export const useChat = () => {
+    const key = '$_chat';
     const existing = getContext(key);
-    if (existing) return existing as ChatRegistry;
-    const chatsState = new ChatRegistryClass();
+    if (existing) return existing as Chat;
+    const chatsState = new ChatClass();
     setContext(key, chatsState);
     return chatsState;
 };

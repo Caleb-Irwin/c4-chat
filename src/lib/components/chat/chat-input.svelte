@@ -6,11 +6,11 @@
 	import Brain from '@lucide/svelte/icons/brain';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
-	import { useChatRegistry } from '$lib/chats.svelte';
+	import { useChat } from '$lib/chats.svelte';
 
 	let {}: {} = $props();
 
-	const chatRegistry = useChatRegistry();
+	const chat = useChat();
 
 	let text = $state('');
 </script>
@@ -45,10 +45,7 @@
 				<span class="hidden lg:inline"> Attach </span>
 			</Button>
 			<div class="flex-grow"></div>
-			<Button
-				size="icon"
-				class="ml-1 flex-shrink-0"
-				onclick={() => chatRegistry.get(chatRegistry.currentId as any).sendMessage(text, 'TODO')}
+			<Button size="icon" class="ml-1 flex-shrink-0" onclick={() => chat.sendMessage(text, 'TODO')}
 				><ArrowUp width="24" height="24" /></Button
 			>
 		</div>

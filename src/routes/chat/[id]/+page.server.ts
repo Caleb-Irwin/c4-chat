@@ -1,7 +1,8 @@
+import type { Id } from '../../../convex/_generated/dataModel';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
     return {
-        threadId: event.params.id,
+        threadId: event.params.id as Id<'threads'>,
     };
 };
