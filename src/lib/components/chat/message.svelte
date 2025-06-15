@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useChat } from '$lib/chats.svelte';
 	import type { Doc } from '../../../convex/_generated/dataModel';
+	import MarkdownRenderer from './markdown-renderer.svelte';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -16,5 +17,5 @@
 	</div>
 </div>
 <div class="pt-8">
-	<p class="whitespace-pre-wrap">{message.message}</p>
+	<MarkdownRenderer md={message.message} />
 </div>

@@ -11,7 +11,6 @@ interface Chat {
     sendMessage: (message: string, model: string) => Promise<void>,
     threadId: Id<'threads'> | null,
     isEmpty: boolean;
-    isLoading: boolean;
     messages: Doc<'messages'>[] | null;
 }
 
@@ -22,8 +21,7 @@ class ChatClass implements Chat {
     private completedMessagesInitialData: Doc<'messages'>[] | null = $state<Doc<'messages'>[] | null>(null);
     private completedMessages = $derived<Doc<'messages'>[] | null>(this.completedMessagesQuery?.data ?? this.completedMessagesInitialData ?? null);
     messages = $derived<Doc<'messages'>[] | null>(this.completedMessages ?? null);
-    isEmpty = $derived(this.threadId === null || (!this.completedMessagesQuery?.isLoading && this.messages?.length === 0));
-    isLoading = $derived(this.completedMessagesQuery?.isLoading ?? true);
+    isEmpty = $derived(this.threadId === null || (this.messages?.length ?? 0) === 0);
 
     async _addInitialData(threadId: Id<'threads'>, data: Doc<'messages'>[]) {
         this.threadId = threadId;

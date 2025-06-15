@@ -9,9 +9,9 @@
 </script>
 
 {@render children?.()}
-<div class="flex-grow w-full overflow- max:h-screen flex justify-center">
-	<div class="flex-grow w-full overflow-hidden flex flex-col pb-0">
-		<div class="flex-grow w-full flex justify-center max-h-screen overflow-x-scroll px-2">
+<div class="flex-grow w-full h-full flex justify-center">
+	<div class="flex-grow w-full overflow-hidden flex flex-col">
+		<div class="flex-grow w-full flex justify-center overflow-y-scroll px-2">
 			<div class="max-w-3xl w-full px-2">
 				<Messages />
 			</div>
