@@ -9,14 +9,12 @@
 	const chat = useChat();
 
 	let lastThreadId = $state<string | undefined>(data.threadId);
-	chat.setThreadId(data.threadId);
-	chat._addInitialData(data.messages);
+	chat._addInitialData(data.threadId, data.messages);
 
 	$effect(() => {
 		if (lastThreadId !== data.threadId) {
 			lastThreadId = data.threadId;
-			chat.setThreadId(data.threadId);
-			chat._addInitialData(data.messages);
+			chat._addInitialData(data.threadId, data.messages);
 		}
 	});
 </script>

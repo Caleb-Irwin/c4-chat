@@ -47,7 +47,7 @@ export default defineSchema({
 		completed: v.boolean(),
 		completionStatus: v.optional(completionStatusUnion),
 		userMessage: v.string(),
-		developerMessage: v.optional(v.string()),
+		systemMessage: v.optional(v.string()),
 		message: v.string(),
 		attachments: v.optional(
 			v.array(
@@ -58,5 +58,7 @@ export default defineSchema({
 				})
 			)
 		)
-	}).index('by_thread_completion', ['thread', 'completed'])
+	})
+		.index('by_thread_completion', ['thread', 'completed'])
+		.index('by_thread', ['thread'])
 });

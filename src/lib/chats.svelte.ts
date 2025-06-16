@@ -10,8 +10,7 @@ interface SendMessageParams {
 }
 
 interface Chat {
-	_addInitialData: (data: Promise<Doc<'messages'>[]>) => Promise<void>;
-	setThreadId: (threadId: Id<'threads'>) => void;
+	_addInitialData: (threadId: Id<'threads'>, messages: Promise<Doc<'messages'>[]>) => Promise<void>;
 	sendMessage: (msg: SendMessageParams) => Promise<void>;
 	threadId: Id<'threads'> | null;
 	messages: Doc<'messages'>[];
@@ -75,15 +74,12 @@ class ChatClass implements Chat {
 			});
 	});
 
-	async _addInitialData(data: Promise<Doc<'messages'>[]>) {
+	async _addInitialData(threadId: Id<'threads'>, data: Promise<Doc<'messages'>[]>) {
+		this.threadId = threadId;
+		this.chatManager.setup(threadId, this.sendMessage.bind(this));
 		if (data) {
 			this.completedMessagesInitialData = await data;
 		}
-	}
-
-	setThreadId(threadId: Id<'threads'>) {
-		this.threadId = threadId;
-		this.chatManager.setup(threadId, this.sendMessage.bind(this));
 	}
 
 	async sendMessage({ message, model }: SendMessageParams): Promise<void> {

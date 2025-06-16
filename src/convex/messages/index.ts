@@ -1,9 +1,10 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { httpAction, internalMutation, query } from '.././_generated/server';
+import { httpAction, internalMutation, MutationCtx, query } from '.././_generated/server';
 import { ConvexError, v } from 'convex/values';
 import { validate } from 'convex-helpers/validators';
 import { internal } from '.././_generated/api';
 import { streamedOpenRouterRequest } from './streamedRequest';
+import { Id } from '../_generated/dataModel';
 
 export const getFinishedMessages = query({
 	args: {
@@ -61,6 +62,35 @@ const messageRequestObject = {
 const messageRequestVerifier = v.object(messageRequestObject);
 export type MessageRequestObject = typeof messageRequestVerifier.type;
 
+interface openRouterMessages {
+	role: 'system' | 'developer' | 'user' | 'assistant' | 'tool';
+	content: string;
+}
+
+async function getBodyMessage(
+	ctx: MutationCtx,
+	messageId: Id<'messages'>
+): Promise<openRouterMessages[]> {
+	const message = await ctx.db.get(messageId);
+
+	const pastMessages = await ctx.db
+		.query('messages')
+		.withIndex('by_thread', (q) =>
+			q.eq('thread', message!.thread).lt('_creationTime', message!._creationTime)
+		)
+		.collect();
+
+	const messages = [...pastMessages, message!];
+
+	return messages.flatMap((msg) => {
+		const res: openRouterMessages[] = [];
+		if (msg.systemMessage) res.push({ role: 'system', content: msg.systemMessage });
+		res.push({ role: 'user', content: msg.userMessage });
+		if (msg.message) res.push({ role: 'assistant', content: msg.message });
+		return res;
+	});
+}
+
 export const startMessage = internalMutation({
 	args: {
 		userId: v.id('users'),
@@ -84,7 +114,8 @@ export const startMessage = internalMutation({
 		if (thread.title === 'New Thread') {
 			await ctx.scheduler.runAfter(0, internal.threads.generateThreadName, {
 				threadId: args.threadId,
-				message: args.userMessage.slice(0, 300)
+				message: args.userMessage.slice(0, 300),
+				key: process.env.OPENROUTER_API_KEY!
 			});
 		}
 
@@ -108,12 +139,12 @@ export const startMessage = internalMutation({
 			completed: false,
 			message: '',
 			attachments: [],
-			developerMessage: undefined
+			systemMessage: undefined
 		});
 
 		const messageBody = {
 			model: 'google/gemini-2.0-flash-001',
-			messages: [{ role: 'user', content: args.userMessage }],
+			messages: await getBodyMessage(ctx, messageId),
 			stream: true
 		};
 

@@ -185,14 +185,15 @@ export const _addAnonymousThreads = mutation({
 export const generateThreadName = internalAction({
 	args: {
 		threadId: v.id('threads'),
-		message: v.string()
+		message: v.string(),
+		key: v.string()
 	},
 	handler: async (ctx, args) => {
 		const url = 'https://openrouter.ai/api/v1/completions';
 		const options = {
 			method: 'POST',
 			headers: {
-				Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+				Authorization: `Bearer ${args.key}`,
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
