@@ -4,6 +4,4 @@ import { createConvexAuthHooks } from '@mmailaender/convex-auth-svelte/sveltekit
 const { handleAuth } = createConvexAuthHooks();
 
 // Apply hooks in sequence
-export const handle = sequence(
-    handleAuth
-);
+export const handle = sequence(handleAuth);

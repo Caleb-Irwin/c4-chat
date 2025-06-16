@@ -5,41 +5,62 @@ import type { RequestHandler, RequestEvent } from './$types';
 const { getAuthState } = createConvexAuthHooks();
 
 export const POST = (async (event: RequestEvent) => {
-    const authState = await getAuthState(event);
-    const token = authState?._state?.token;
+	const authState = await getAuthState(event);
+	const token = authState?._state?.token;
 
-    if (!token) {
-        return new Response('Authentication required', { status: 401 });
-    }
+	if (!token) {
+		return new Response('Authentication required', { status: 401 });
+	}
 
-    const convexHttpUrl = PUBLIC_CONVEX_URL.replace('.cloud', '.site') + '/postMessage';
+	const convexHttpUrl = PUBLIC_CONVEX_URL.replace('.cloud', '.site') + '/postMessage';
 
-    const requestBody = await event.request.json();
-    const res = await fetch(convexHttpUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody)
-    });
+	const requestBody = await event.request.json();
+	const res = await fetch(convexHttpUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(requestBody)
+	});
 
-    if (!res.ok) {
-        console.error('Error in response:', res.status, res.statusText);
-        const errorText = await res.text();
-        console.error('Response error text:', errorText);
-        return new Response(errorText, { status: res.status });
-    }
+	if (!res.ok) {
+		console.error('Error in response:', res.status, res.statusText);
+		const errorText = await res.text();
+		console.error('Response error text:', errorText);
+		return new Response(errorText, { status: res.status });
+	}
 
-    if (!res.body) {
-        return new Response('No response body', { status: 500 });
-    }
+	// Create a new ReadableStream to retransmit the original stream
+	const stream = new ReadableStream({
+		async start(controller) {
+			const reader = res.body?.getReader();
+			if (reader) {
+				try {
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
+						console.log(value);
+						controller.enqueue(value);
+					}
+				} catch (error) {
+					controller.error(error);
+				} finally {
+					reader.releaseLock();
+					controller.close();
+				}
+			} else {
+				controller.close();
+			}
+		}
+	});
 
-    return new Response(res.body, {
-        status: 200,
-        headers: new Headers({
-            "Content-Type": "text/plain",
-            "messageId": res.headers.get("messageId")!
-        })
-    });
+	return new Response(stream, {
+		status: 200,
+		headers: new Headers({
+			'Content-Type': 'text/plain; charset=utf-8',
+			'Cache-Control': 'no-cache',
+			messageId: res.headers.get('messageId')!
+		})
+	});
 }) satisfies RequestHandler;
