@@ -1,14 +1,24 @@
 <script lang="ts">
 	import { useChat } from '$lib/chats.svelte';
+	import Messages from '$lib/components/chat/messages.svelte';
 
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	const chat = useChat();
-	chat.changeThread(data.threadId);
+
+	let lastThreadId = $state<string | undefined>(data.threadId);
+	chat.setThreadId(data.threadId);
+	chat._addInitialData(data.messages);
 
 	$effect(() => {
-		if (data.threadId === chat.threadId) chat._addInitialData(data.threadId, data.messages);
+		if (lastThreadId !== data.threadId) {
+			lastThreadId = data.threadId;
+			chat.setThreadId(data.threadId);
+			chat._addInitialData(data.messages);
+		}
 	});
 </script>
+
+<Messages />

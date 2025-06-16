@@ -4,14 +4,17 @@ import type { PageServerLoad } from './$types';
 import { api } from '../../../convex/_generated/api';
 
 export const load: PageServerLoad = async (event) => {
-	const { createConvexHttpClient } = createConvexAuthHandlers();
-	const client = await createConvexHttpClient(event);
-	const messages = await client.query(api.messages.getFinishedMessages, {
-		threadId: event.params.id as Id<'threads'>
-	});
+	async function getMessages() {
+		const { createConvexHttpClient } = createConvexAuthHandlers();
+		const client = await createConvexHttpClient(event);
+		const messages = await client.query(api.messages.getFinishedMessages, {
+			threadId: event.params.id as Id<'threads'>
+		});
+		return messages;
+	}
 
 	return {
 		threadId: event.params.id as Id<'threads'>,
-		messages
+		messages: getMessages()
 	};
 };

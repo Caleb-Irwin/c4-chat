@@ -12,7 +12,6 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import { useChat } from '$lib/chats.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 
@@ -25,7 +24,6 @@
 	let { thread }: Props = $props();
 
 	const threads = useThreads();
-	const chat = useChat();
 
 	let delDialogOpen = $state(false),
 		isEditing = $state(false),
@@ -77,12 +75,8 @@
 			<a
 				href={`/chat/${thread._id}`}
 				class="px-4 p-2 w-full block"
-				onclick={() => {
-					chat.changeThread(thread._id);
-				}}
 				onmousedown={(_) => {
 					goto(`/chat/${thread._id}`);
-					chat.changeThread(thread._id);
 				}}
 			>
 				<span class="truncate block">{title}</span>

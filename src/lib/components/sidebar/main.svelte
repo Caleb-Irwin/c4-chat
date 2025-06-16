@@ -12,7 +12,6 @@
 	import { useThreads } from '$lib/threads.svelte';
 	import { tick } from 'svelte';
 	import { page } from '$app/state';
-	import { useChat } from '$lib/chats.svelte';
 
 	const sidebar = useSidebar();
 
@@ -36,7 +35,6 @@
 	}
 
 	const threads = useThreads();
-	const chat = useChat();
 </script>
 
 <div class="fixed top-2 left-2 z-50 bg-sidebar rounded-sm cursor-default">
@@ -74,14 +72,7 @@
 		</h1>
 
 		<div class="flex p-1 pt-0">
-			<Button
-				href="/"
-				class="w-full"
-				data-sveltekit-preload-data="hover"
-				onclick={() => {
-					chat.changeThread(null);
-				}}
-			>
+			<Button href="/" class="w-full" data-sveltekit-preload-data="hover">
 				<span>New Chat</span>
 			</Button>
 		</div>

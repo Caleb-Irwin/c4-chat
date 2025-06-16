@@ -2,21 +2,26 @@ import { getContext, setContext } from 'svelte';
 import type { Doc, Id } from '../convex/_generated/dataModel';
 import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
-import { browser } from '$app/environment';
-import { pushState } from '$app/navigation';
+import { goto } from '$app/navigation';
+
+interface SendMessageParams {
+	message: string;
+	model: string;
+}
 
 interface Chat {
-	_addInitialData: (threadId: Id<'threads'>, data: Doc<'messages'>[]) => Promise<void>;
-	changeThread: (threadId: Id<'threads'> | null) => void;
-	sendMessage: (message: string, model: string) => Promise<void>;
+	_addInitialData: (data: Promise<Doc<'messages'>[]>) => Promise<void>;
+	setThreadId: (threadId: Id<'threads'>) => void;
+	sendMessage: (msg: SendMessageParams) => Promise<void>;
 	threadId: Id<'threads'> | null;
-	isEmpty: boolean;
-	messages: Doc<'messages'>[] | null;
+	messages: Doc<'messages'>[];
 }
 
 class ChatClass implements Chat {
-	threadId: Id<'threads'> | null = $state(null);
+	threadId: Id<'threads'> | null = $state<Id<'threads'> | null>(null);
+
 	private client = useConvexClient();
+	private chatManager = useChatManager();
 
 	private generatingMessageQuery = $derived(
 		this.threadId
@@ -56,12 +61,12 @@ class ChatClass implements Chat {
 	private completedMessages = $derived<Doc<'messages'>[] | null>(
 		this.completedMessagesQuery?.data ?? this.completedMessagesInitialData ?? null
 	);
-	messages = $derived.by<Doc<'messages'>[] | null>(() => {
+	messages = $derived.by<Doc<'messages'>[]>(() => {
 		const all = [
 			...(this.completedMessages ?? []),
 			...(this.generatingMessage ? [this.generatingMessage] : [])
 		];
-		if (all.length === 0) return null;
+		if (all.length === 0) return [];
 		return all
 			.filter((msg) => msg.thread === this.threadId)
 			.sort((a, b) => {
@@ -69,27 +74,23 @@ class ChatClass implements Chat {
 				return a._creationTime < b._creationTime ? -1 : 1;
 			});
 	});
-	isEmpty = $derived(this.threadId === null || (this.messages?.length ?? 0) === 0);
 
-	async _addInitialData(threadId: Id<'threads'>, data: Doc<'messages'>[]) {
-		this.changeThread(threadId);
+	async _addInitialData(data: Promise<Doc<'messages'>[]>) {
 		if (data) {
-			this.completedMessagesInitialData = data;
+			this.completedMessagesInitialData = await data;
 		}
 	}
 
-	changeThread(threadId: Id<'threads'> | null) {
+	setThreadId(threadId: Id<'threads'>) {
 		this.threadId = threadId;
+		this.chatManager.setup(threadId, this.sendMessage.bind(this));
 	}
 
-	async sendMessage(message: string, model: string): Promise<void> {
-		let threadId = this.threadId;
+	async sendMessage({ message, model }: SendMessageParams): Promise<void> {
 		this.generatingMessageText = null;
 
-		if (!threadId) {
-			threadId = await this.client.mutation(api.threads.create, {});
-			this.changeThread(threadId);
-			if (browser) pushState(`/chat/${threadId}`, {});
+		if (!this.threadId) {
+			throw new Error('Thread ID is not set. Please set the thread ID before sending a message.');
 		}
 
 		const res = await fetch('/chat/postMessage', {
@@ -98,7 +99,7 @@ class ChatClass implements Chat {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				threadId: threadId,
+				threadId: this.threadId,
 				userMessage: message,
 				model
 			})
@@ -114,12 +115,7 @@ class ChatClass implements Chat {
 					if (done) break;
 
 					const chunk = decoder.decode(value, { stream: true });
-					if (this.threadId === threadId) {
-						this.generatingMessageText += chunk;
-					} else {
-						reader.cancel();
-						break;
-					}
+					this.generatingMessageText += chunk;
 				}
 			} finally {
 				reader.releaseLock();
@@ -135,4 +131,50 @@ export const useChat = () => {
 	const chatsState = new ChatClass();
 	setContext(key, chatsState);
 	return chatsState;
+};
+
+interface ChatManager {
+	sendMessage: Chat['sendMessage'];
+	setup: (threadId: Id<'threads'> | null, sendMessage: Chat['sendMessage'] | null) => void;
+	threadId: Id<'threads'> | null;
+}
+
+class ChatManagerClass implements ChatManager {
+	threadId: Id<'threads'> | null = $state<Id<'threads'> | null>(null);
+	private sendMessageFn: Chat['sendMessage'] | null = null;
+	private client = useConvexClient();
+
+	sendMessage = async (msg: SendMessageParams) => {
+		if (!this.sendMessageFn) {
+			if (this.threadId) {
+				throw new Error('sendMessage function is not set');
+			} else {
+				this.threadId = await this.client.mutation(api.threads.create, {});
+				return await new Promise<ReturnType<Chat['sendMessage']>>((res) => {
+					goto(`/chat/${this.threadId}`).then(async () => {
+						if (!this.sendMessageFn) {
+							throw new Error('sendMessage function is not set after navigation');
+						}
+						res(this.sendMessageFn(msg));
+					});
+				});
+			}
+		} else {
+			return await this.sendMessageFn(msg);
+		}
+	};
+
+	setup(threadId: Id<'threads'> | null, sendMessage: Chat['sendMessage'] | null) {
+		this.threadId = threadId;
+		this.sendMessageFn = sendMessage;
+	}
+}
+
+export const useChatManager = () => {
+	const key = '$_chatManager';
+	const existing = getContext(key);
+	if (existing) return existing as ChatManager;
+	const chatManagerState = new ChatManagerClass();
+	setContext(key, chatManagerState);
+	return chatManagerState;
 };

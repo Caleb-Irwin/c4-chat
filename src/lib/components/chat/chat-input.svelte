@@ -6,13 +6,12 @@
 	import Brain from '@lucide/svelte/icons/brain';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
-	import { useChat } from '$lib/chats.svelte';
+	import { useChatManager } from '$lib/chats.svelte';
 
 	let {}: {} = $props();
 
-	const chat = useChat();
-
 	let text = $state('');
+	const chatManager = useChatManager();
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-sidebar shadow-sm">
@@ -45,9 +44,13 @@
 				<span class="hidden lg:inline"> Attach </span>
 			</Button>
 			<div class="flex-grow"></div>
-			<Button size="icon" class="ml-1 flex-shrink-0" onclick={() => chat.sendMessage(text, 'TODO')}
-				><ArrowUp width="24" height="24" /></Button
+			<Button
+				size="icon"
+				class="ml-1 flex-shrink-0"
+				onclick={() => chatManager.sendMessage({ message: text, model: 'todo' })}
 			>
+				<ArrowUp width="24" height="24" />
+			</Button>
 		</div>
 	</div>
 </div>
