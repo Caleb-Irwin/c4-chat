@@ -31,36 +31,11 @@ export const POST = (async (event: RequestEvent) => {
 		return new Response(errorText, { status: res.status });
 	}
 
-	// Create a new ReadableStream to retransmit the original stream
-	const stream = new ReadableStream({
-		async start(controller) {
-			const reader = res.body?.getReader();
-			if (reader) {
-				try {
-					while (true) {
-						const { done, value } = await reader.read();
-						if (done) break;
-						console.log(value);
-						controller.enqueue(value);
-					}
-				} catch (error) {
-					controller.error(error);
-				} finally {
-					reader.releaseLock();
-					controller.close();
-				}
-			} else {
-				controller.close();
-			}
-		}
-	});
-
-	return new Response(stream, {
+	return new Response(res.body, {
 		status: 200,
 		headers: new Headers({
 			'Content-Type': 'text/plain; charset=utf-8',
-			'Cache-Control': 'no-cache',
-			messageId: res.headers.get('messageId')!
+			'Cache-Control': 'no-cache'
 		})
 	});
 }) satisfies RequestHandler;

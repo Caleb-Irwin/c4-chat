@@ -170,51 +170,54 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 		return new Response('Forbidden: User not authenticated', { status: 403 });
 	}
 
-	const req: MessageRequestObject = await request.json();
-	if (!validate(messageRequestVerifier, req)) {
-		console.error('Invalid request format:', req);
-		throw new ConvexError('invalid_request');
-	}
-	const { messageId, messageBody, key } = await ctx.runMutation(internal.messages.startMessage, {
-			userId,
-			...req
-		}),
-		{ readable, writable } = new TransformStream(),
-		writer = writable.getWriter();
+	const { readable, writable } = new TransformStream();
 
-	try {
-		let lastChunkUpdate: number | null = null;
-		const resString = await streamedOpenRouterRequest({
-			body: messageBody,
-			openRouterApiKey: key,
-			outputWriter: writer,
-			onChunkUpdate: async (fullResponseSoFar: string) => {
-				const now = Date.now();
-				if (lastChunkUpdate === null || now - lastChunkUpdate > 500) {
-					lastChunkUpdate = now;
-					await ctx.runMutation(internal.messages.updateGeneratingMessage, {
-						messageId,
-						message: fullResponseSoFar
-					});
+	async function generate() {
+		const req: MessageRequestObject = await request.json();
+		if (!validate(messageRequestVerifier, req)) {
+			console.error('Invalid request format:', req);
+			throw new ConvexError('invalid_request');
+		}
+		const { messageId, messageBody, key } = await ctx.runMutation(internal.messages.startMessage, {
+				userId: userId!,
+				...req
+			}),
+			writer = writable.getWriter();
+
+		try {
+			let lastChunkUpdate: number | null = null;
+			const resString = await streamedOpenRouterRequest({
+				body: messageBody,
+				openRouterApiKey: key,
+				outputWriter: writer,
+				onChunkUpdate: async (fullResponseSoFar: string) => {
+					const now = Date.now();
+					if (lastChunkUpdate === null || now - lastChunkUpdate > 500) {
+						lastChunkUpdate = now;
+						await ctx.runMutation(internal.messages.updateGeneratingMessage, {
+							messageId,
+							message: fullResponseSoFar
+						});
+					}
 				}
-			}
-		});
-		await ctx.runMutation(internal.messages.completeMessage, {
-			messageId,
-			message: resString
-		});
-	} catch (e) {
-		console.error('Error in streamedOpenRouterRequest:', e);
-		await ctx.runMutation(internal.messages.setError, { messageId });
+			});
+			await ctx.runMutation(internal.messages.completeMessage, {
+				messageId,
+				message: resString
+			});
+		} catch (e) {
+			console.error('Error in streamedOpenRouterRequest:', e);
+			await ctx.runMutation(internal.messages.setError, { messageId });
+		}
+		void writer.close();
 	}
 
-	void writer.close();
+	void generate();
 
 	return new Response(readable, {
 		status: 200,
 		headers: new Headers({
-			'Content-Type': 'text/plain',
-			messageId
+			'Content-Type': 'text/plain'
 		})
 	});
 });

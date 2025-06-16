@@ -114,7 +114,6 @@ class ChatClass implements Chat {
 					const chunk = decoder.decode(value, { stream: true });
 					if (this.threadId === threadId) {
 						this.generatingMessageText += chunk;
-						console.log(this.generatingMessageText);
 					} else {
 						reader.cancel();
 						break;
