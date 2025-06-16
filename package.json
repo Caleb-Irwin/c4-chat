@@ -38,6 +38,7 @@
 	"dependencies": {
 		"@auth/core": "^0.39.1",
 		"@convex-dev/auth": "^0.0.87",
+		"@convex-dev/migrations": "^0.2.9",
 		"@mmailaender/convex-auth-svelte": "^0.0.2",
 		"@types/lodash-es": "^4.17.12",
 		"@types/node": "^22.15.30",

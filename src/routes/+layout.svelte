@@ -41,7 +41,7 @@
 <ModeWatcher />
 <Sidebar.Provider class="h-full">
 	<AppSidebar />
-	<main class="w-full h-full flex flex-col">
+	<main class="w-full h-full">
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>

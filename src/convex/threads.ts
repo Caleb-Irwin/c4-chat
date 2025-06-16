@@ -139,7 +139,7 @@ export const del = mutation({
         await ctx.db.delete(threadId);
 
         const messages = await ctx.db.query('messages')
-            .withIndex('by_thread_status', (q) => q.eq('thread', threadId))
+            .withIndex('by_thread_completion', (q) => q.eq('thread', threadId))
             .collect()
         for (const message of messages) {
             await ctx.db.delete(message._id);
@@ -168,10 +168,6 @@ export const _addAnonymousThreads = mutation({
         }
     }
 });
-
-export const updateThread = async (ctx: MutationCtx, { threadId, generating }: { threadId: Id<"threads">, generating: boolean }) => {
-    await ctx.db.patch(threadId, { lastModified: Date.now(), generating });
-};
 
 export const generateThreadName = internalAction({
     args: {

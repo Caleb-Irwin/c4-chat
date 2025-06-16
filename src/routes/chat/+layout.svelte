@@ -9,7 +9,7 @@
 </script>
 
 {@render children?.()}
-<div class="flex-grow w-full h-full flex justify-center">
+<div class="flex-grow h-full flex justify-center">
 	<div class="flex-grow w-full overflow-hidden flex flex-col">
 		<div class="flex-grow w-full flex justify-center overflow-y-scroll px-2">
 			<div class="max-w-3xl w-full px-2">
