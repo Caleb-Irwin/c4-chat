@@ -2,11 +2,14 @@
 	import Markdown from 'svelte-exmarkdown';
 	import remarkMath from 'remark-math';
 	import rehypeKatex from 'rehype-katex';
-	import 'highlight.js/styles/github.css';
 	import rehypeHighlight from 'rehype-highlight';
 	import { common } from 'lowlight';
-	import 'katex/dist/katex.min.css'; // KaTeX styling :contentReference[oaicite:2]{index=2}
+	import { gfmPlugin } from 'svelte-exmarkdown/gfm';
 	import type { Plugin } from 'svelte-exmarkdown';
+	import 'katex/dist/katex.min.css';
+	import 'highlight.js/styles/github-dark.min.css';
+	import throttle from 'lodash-es/throttle';
+	import { browser } from '$app/environment';
 
 	interface Props {
 		md: string;
@@ -14,19 +17,23 @@
 
 	let { md }: Props = $props();
 
-	// import { onMount } from 'svelte';
-	// import throttle from 'lodash-es/throttle';
-	// export let stream = async (push: (chunk: string) => void) => {};
-	// const update = throttle((delta: string) => (md += delta), 80); // ~12 fps
-	// onMount(() => { stream(update); });
-	// let md = $state('');            // full markdown so far
+	let markdown = $state(md);
 
 	const plugins: Plugin[] = [
 		{ remarkPlugin: [remarkMath], rehypePlugin: [rehypeKatex] },
-		{ rehypePlugin: [rehypeHighlight, { ignoreMissing: true, languages: { ...common } }] }
+		{ rehypePlugin: [rehypeHighlight, { ignoreMissing: true, languages: { ...common } }] },
+		gfmPlugin()
 	];
+
+	const update = throttle((newMd: string) => (markdown = newMd), 80);
+	$effect(() => {
+		if (browser) update(md);
+	});
 </script>
 
 <div class="prose dark:prose-invert">
-	<Markdown {md} {plugins} />
+	<Markdown md={markdown} {plugins} />
 </div>
+
+<style>
+</style>
