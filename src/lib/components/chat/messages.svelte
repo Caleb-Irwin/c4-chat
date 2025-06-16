@@ -1,8 +1,17 @@
 <script lang="ts">
-	import { useChat } from '$lib/chats.svelte';
+	import { ChatClass, setChat } from '$lib/chats.svelte';
+	import type { Doc, Id } from '../../../convex/_generated/dataModel';
 	import Message from './message.svelte';
 
-	const chat = useChat();
+	interface Props {
+		threadId: Id<'threads'>;
+		messages: Promise<Doc<'messages'>[]>;
+	}
+
+	let { threadId, messages }: Props = $props();
+
+	const chat = new ChatClass(threadId, messages);
+	setChat(chat);
 </script>
 
 <div class="h-8"></div>

@@ -10,13 +10,12 @@ interface SendMessageParams {
 }
 
 interface Chat {
-	_addInitialData: (threadId: Id<'threads'>, messages: Promise<Doc<'messages'>[]>) => Promise<void>;
 	sendMessage: (msg: SendMessageParams) => Promise<void>;
 	threadId: Id<'threads'> | null;
 	messages: Doc<'messages'>[];
 }
 
-class ChatClass implements Chat {
+export class ChatClass implements Chat {
 	threadId: Id<'threads'> | null = $state<Id<'threads'> | null>(null);
 
 	private client = useConvexClient();
@@ -74,11 +73,13 @@ class ChatClass implements Chat {
 			});
 	});
 
-	async _addInitialData(threadId: Id<'threads'>, data: Promise<Doc<'messages'>[]>) {
+	constructor(threadId: Id<'threads'>, data: Promise<Doc<'messages'>[]>) {
 		this.threadId = threadId;
 		this.chatManager.setup(threadId, this.sendMessage.bind(this));
 		if (data) {
-			this.completedMessagesInitialData = await data;
+			data.then((messages) => {
+				this.completedMessagesInitialData = messages;
+			});
 		}
 	}
 
@@ -120,13 +121,14 @@ class ChatClass implements Chat {
 	}
 }
 
+export const setChat = (chat: Chat) => {
+	const key = '$_chat';
+	setContext(key, chat);
+};
+
 export const useChat = () => {
 	const key = '$_chat';
-	const existing = getContext(key);
-	if (existing) return existing as Chat;
-	const chatsState = new ChatClass();
-	setContext(key, chatsState);
-	return chatsState;
+	return getContext(key) as Chat;
 };
 
 interface ChatManager {
