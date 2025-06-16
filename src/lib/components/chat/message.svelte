@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { useChat } from '$lib/chats.svelte';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import type { Doc } from '../../../convex/_generated/dataModel';
 	import MarkdownRenderer from './markdown-renderer.svelte';
+	import * as Card from '$lib/components/ui/card/index';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -9,13 +11,54 @@
 	let { message }: Props = $props();
 
 	const chat = useChat();
+
+	let userMessageElement: HTMLDivElement;
+
+	let hasScrolled = false;
+
+	$effect(() => {
+		if (!message.completed && userMessageElement && !hasScrolled) {
+			hasScrolled = true;
+			userMessageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+		if (message.completed) {
+			hasScrolled = false;
+		}
+	});
 </script>
 
-<div class="flex justify-end pt-8">
-	<div class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl">
+<div class="flex justify-end">
+	<div
+		bind:this={userMessageElement}
+		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl mt-8"
+	>
 		{message.userMessage}
 	</div>
 </div>
-<div class="pt-8">
-	<MarkdownRenderer md={message.message} />
+<div class="min-h-10 pt-8">
+	{#if message.message.trim() !== ''}
+		<MarkdownRenderer md={message.message} />
+	{:else if !message.completed}
+		<div class="flex justify-start">
+			<LoaderCircle class="animate-spin size-10! text-primary" />
+		</div>
+	{:else if message.completed && message.completionStatus === 'completed'}
+		<div class="text-left text-muted-foreground py-2">No response</div>
+	{/if}
 </div>
+
+{#if message.completed && message.completionStatus === 'error'}
+	<Card.Root class="mt-2 py-2 bg-red-200 border-red-700">
+		<p class="pl-3 text-center text-red-700">
+			<span class="font-semibold">Error</span> An error occurred while processing your request.
+		</p>
+	</Card.Root>
+{:else if message.completed && message.completionStatus === 'stopped'}
+	<Card.Root class="mt-2 py-2 bg-accent">
+		<p class="pl-3 text-center text-muted-foreground">
+			<span class="font-semibold">Request Stopped</span>
+		</p>
+	</Card.Root>
+{/if}
+
+<div class="h-8"></div>

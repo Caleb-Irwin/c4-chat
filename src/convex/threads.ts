@@ -1,15 +1,9 @@
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { Doc, Id } from './_generated/dataModel';
-import {
-	internalAction,
-	internalMutation,
-	mutation,
-	MutationCtx,
-	query
-} from './_generated/server';
+import { Doc } from './_generated/dataModel';
+import { internalAction, internalMutation, mutation, query } from './_generated/server';
 import { paginationOptsValidator, PaginationResult } from 'convex/server';
-import { api, internal } from './_generated/api';
+import { internal } from './_generated/api';
 
 export const get = query({
 	args: {
@@ -143,8 +137,6 @@ export const del = mutation({
 		const thread = await ctx.db.get(threadId);
 		if (thread === null || thread.user !== userId) {
 			throw new Error('Thread not found or you do not have permission to delete it.');
-		} else if (thread.generating) {
-			throw new Error('Cannot delete a thread that is currently generating.');
 		}
 
 		await ctx.db.delete(threadId);
@@ -155,6 +147,7 @@ export const del = mutation({
 			.collect();
 		for (const message of messages) {
 			await ctx.db.delete(message._id);
+			//TODO Delete attachments if any
 		}
 	}
 });

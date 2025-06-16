@@ -1,5 +1,5 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { httpAction, internalMutation, MutationCtx, query } from '.././_generated/server';
+import { httpAction, internalMutation, mutation, MutationCtx, query } from '.././_generated/server';
 import { ConvexError, v } from 'convex/values';
 import { validate } from 'convex-helpers/validators';
 import { internal } from '.././_generated/api';
@@ -52,6 +52,23 @@ export const getGeneratingMessage = query({
 		return message ?? null;
 	}
 });
+
+async function ensurePermissions(ctx: MutationCtx, messageId: Id<'messages'>): Promise<void> {
+	const userId = await getAuthUserId(ctx);
+	if (userId === null) throw new Error('User not authenticated.');
+
+	const message = await ctx.db.get(messageId);
+	if (!message) {
+		throw new Error('Message not found');
+	}
+	const thread = await ctx.db.get(message.thread);
+	if (!thread) {
+		throw new Error('Thread not found');
+	}
+	if (thread.user !== userId) {
+		throw new Error('User does not have permission to access this thread');
+	}
+}
 
 const messageRequestObject = {
 	threadId: v.id('threads'),
@@ -156,6 +173,37 @@ export const startMessage = internalMutation({
 	}
 });
 
+export const stopMessage = mutation({
+	args: {
+		messageId: v.id('messages')
+	},
+	handler: async (ctx, args) => {
+		await ensurePermissions(ctx, args.messageId);
+		const message = await ctx.db.get(args.messageId);
+		if (message && !message.completed) {
+			await ctx.db.patch(args.messageId, { completionStatus: 'stopped' });
+		}
+	}
+});
+
+export const updateGeneratingMessage = internalMutation({
+	args: {
+		messageId: v.id('messages'),
+		message: v.string()
+	},
+	handler: async (ctx, args) => {
+		const msg = await ctx.db.get(args.messageId);
+		if (!msg)
+			return {
+				deleted: true
+			};
+		await ctx.db.patch(args.messageId, { message: args.message });
+		return {
+			completionStatus: msg.completionStatus
+		};
+	}
+});
+
 export const setError = internalMutation({
 	args: {
 		messageId: v.id('messages')
@@ -167,13 +215,17 @@ export const setError = internalMutation({
 	}
 });
 
-export const updateGeneratingMessage = internalMutation({
+export const setStopped = internalMutation({
 	args: {
-		messageId: v.id('messages'),
-		message: v.string()
+		messageId: v.id('messages')
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.patch(args.messageId, { message: args.message });
+		await ctx.db.patch(args.messageId, {
+			completed: true,
+			completionStatus: 'stopped'
+		});
+		const { thread } = (await ctx.db.get(args.messageId))!;
+		await ctx.db.patch(thread, { generating: false });
 	}
 });
 
@@ -221,14 +273,26 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 				body: messageBody,
 				openRouterApiKey: key,
 				outputWriter: writer,
-				onChunkUpdate: async (fullResponseSoFar: string) => {
+				onChunkUpdate: async (fullResponseSoFar: string, abort) => {
 					const now = Date.now();
 					if (lastChunkUpdate === null || now - lastChunkUpdate > 500) {
 						lastChunkUpdate = now;
-						await ctx.runMutation(internal.messages.updateGeneratingMessage, {
-							messageId,
-							message: fullResponseSoFar
-						});
+						const { completionStatus, deleted } = await ctx.runMutation(
+							internal.messages.updateGeneratingMessage,
+							{
+								messageId,
+								message: fullResponseSoFar
+							}
+						);
+						if (completionStatus === 'stopped') {
+							await ctx.runMutation(internal.messages.setStopped, {
+								messageId
+							});
+							abort();
+						} else if (deleted) {
+							abort();
+							return;
+						}
 					}
 				}
 			});
@@ -240,7 +304,7 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 			console.error('Error in streamedOpenRouterRequest:', e);
 			await ctx.runMutation(internal.messages.setError, { messageId });
 		}
-		void writer.close();
+		await writer.close();
 	}
 
 	void generate();
