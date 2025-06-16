@@ -38,6 +38,10 @@
 	useChat();
 </script>
 
+<svelte:head>
+	<title>Explosively Fast Chat</title>
+</svelte:head>
+
 <ModeWatcher />
 <Sidebar.Provider class="h-full">
 	<AppSidebar />

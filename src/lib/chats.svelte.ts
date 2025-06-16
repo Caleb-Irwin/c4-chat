@@ -62,15 +62,17 @@ class ChatClass implements Chat {
 			...(this.generatingMessage ? [this.generatingMessage] : [])
 		];
 		if (all.length === 0) return null;
-		return all.sort((a, b) => {
-			if (a._creationTime === b._creationTime) return 0;
-			return a._creationTime < b._creationTime ? -1 : 1;
-		});
+		return all
+			.filter((msg) => msg.thread === this.threadId)
+			.sort((a, b) => {
+				if (a._creationTime === b._creationTime) return 0;
+				return a._creationTime < b._creationTime ? -1 : 1;
+			});
 	});
 	isEmpty = $derived(this.threadId === null || (this.messages?.length ?? 0) === 0);
 
 	async _addInitialData(threadId: Id<'threads'>, data: Doc<'messages'>[]) {
-		this.threadId = threadId;
+		this.changeThread(threadId);
 		if (data) {
 			this.completedMessagesInitialData = data;
 		}

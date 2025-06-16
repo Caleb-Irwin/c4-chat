@@ -14,6 +14,7 @@
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import { useChat } from '$lib/chats.svelte';
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -80,6 +81,7 @@
 					chat.changeThread(thread._id);
 				}}
 				onmousedown={(_) => {
+					goto(`/chat/${thread._id}`);
 					chat.changeThread(thread._id);
 				}}
 			>

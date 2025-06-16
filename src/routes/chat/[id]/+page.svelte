@@ -6,7 +6,7 @@
 	let { data }: PageProps = $props();
 
 	const chat = useChat();
-	chat._addInitialData(data.threadId, data.messages); // Intentionally not reactive
+	chat.changeThread(data.threadId);
 
 	$effect(() => {
 		if (data.threadId === chat.threadId) chat._addInitialData(data.threadId, data.messages);

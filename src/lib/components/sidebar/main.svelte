@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import MessageSquare from '@lucide/svelte/icons/message-square';
 	import Search from '@lucide/svelte/icons/search';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Account from './account.svelte';
@@ -83,7 +82,6 @@
 					chat.changeThread(null);
 				}}
 			>
-				<MessageSquare />
 				<span>New Chat</span>
 			</Button>
 		</div>
