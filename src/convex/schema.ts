@@ -49,6 +49,7 @@ export default defineSchema({
 		completionStatus: v.optional(completionStatusUnion),
 		userMessage: v.string(),
 		message: v.string(),
+		reasoning: v.optional(v.string()),
 		attachments: v.optional(
 			v.array(
 				v.object({

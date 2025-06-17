@@ -4,6 +4,7 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { useUser } from '$lib/user.svelte';
 	import { Root } from '../ui/card';
+	import Unlock from '@lucide/svelte/icons/unlock';
 
 	const user = useUser(),
 		avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
@@ -19,24 +20,14 @@
 			</p>
 		{/if}
 
-		{#if !user.isAnonymous && user.row?.accountCreditsInCentThousandths && user.row?.accountCreditsInCentThousandths <= 10 * 1000}
-			<p
-				class="text-xs text-center p-0.5 {user.isAnonymous ? 'py-2' : 'py-1'} text-muted-foreground"
-			>
-				You have <span class="font-semibold"
-					>¢{(user.row?.accountCreditsInCentThousandths ?? 0) / 1000}</span
-				> in credits left
-			</p>
-		{/if}
-
 		{#if user.row?.freeRequestsLeft === 0 && !user.row.openRouterKey}
-			<Root class="mt-2 py-2 bg-red-200 border-red-700 text-sm mb-2">
+			<Root class="my-2 py-2 bg-red-200 border-red-700 text-sm">
 				<p class="pl-3 text-center text-red-700">
 					<span class="font-semibold">Zero</span> free requests left
 				</p>
 			</Root>
-		{:else if user.row?.accountCreditsInCentThousandths !== undefined && user.row?.accountCreditsInCentThousandths <= 100}
-			<Root class="mt-2 py-2 bg-yellow-200 border-yellow-700 text-sm mb-2">
+		{:else if !user.isAnonymous && user.row?.accountCreditsInCentThousandths !== undefined && user.row?.accountCreditsInCentThousandths <= 100}
+			<Root class="my-2 py-2 bg-yellow-200 border-yellow-700 text-sm">
 				<p class="pl-3 text-center text-yellow-700">
 					<span class="font-semibold">{user.row?.accountCreditsInCentThousandths}</span> account credits
 					left
@@ -45,6 +36,20 @@
 		{/if}
 
 		{#if user.isAnonymous}
+			<Root
+				class="py-3 mb-2 px-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 text-sm"
+			>
+				<div class="flex items-start space-x-2">
+					<Unlock class="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+					<div class="text-blue-700 dark:text-blue-300">
+						<p class="font-medium mb-1">Unlock More Features</p>
+						<p class="text-xs text-blue-600 dark:text-blue-400">
+							Sign in or create an account to access more features and credits
+						</p>
+					</div>
+				</div>
+			</Root>
+
 			<Button
 				class="w-full cursor-pointer bg-white dark:bg-black text-foreground border-2 border-accent hover:bg-muted dark:hover:bg-muted"
 				onclick={() => {
@@ -57,6 +62,22 @@
 		{/if}
 
 		{#if !user.isAnonymous && user.row}
+			{#if !user.row.openRouterKey}
+				<Root
+					class="py-3 mb-1 px-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 text-sm"
+				>
+					<a class="flex items-start space-x-2" href="/settings">
+						<Unlock class="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+						<div class="text-blue-700 dark:text-blue-300">
+							<p class="font-medium mb-1">Unlock Premium Features</p>
+							<p class="text-xs text-blue-600 dark:text-blue-400">
+								Connect to OpenRouter to access hundreds of models, search, and attachments
+							</p>
+						</div>
+					</a>
+				</Root>
+			{/if}
+
 			<a
 				href={user.row ? '/settings' : '/'}
 				class="flex items-center min-h-9 p-3 rounded-sm hover:bg-accent"

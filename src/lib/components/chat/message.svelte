@@ -4,6 +4,7 @@
 	import type { Doc } from '../../../convex/_generated/dataModel';
 	import MarkdownRenderer from './markdown-renderer.svelte';
 	import { Root } from '../ui/card';
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -35,14 +36,35 @@
 		{message.userMessage}
 	</div>
 </div>
+
 <div class="min-h-10 pt-8">
+	{#if message.reasoning}
+		<Accordion.Root type="single">
+			<Accordion.Item value="item-1">
+				<Accordion.Trigger class="justify-start gap-1 no-underline!">
+					<div class="flex font-semibold">
+						{#if !message.message && !message.completed}
+							<LoaderCircle class="animate-spin  text-primary mr-2 size-5!" />
+						{/if}
+						Reasoning
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content>
+					<p class="prose dark:prose-invert text-sm">
+						{message.reasoning}
+					</p>
+				</Accordion.Content>
+			</Accordion.Item>
+		</Accordion.Root>
+	{/if}
+
 	{#if message.message.trim() !== ''}
 		<MarkdownRenderer md={message.message} />
-	{:else if !message.completed}
+	{:else if !message.completed && !message.reasoning}
 		<div class="flex justify-start">
 			<LoaderCircle class="animate-spin size-10! text-primary" />
 		</div>
-	{:else if message.completed && message.completionStatus === 'completed'}
+	{:else if !message.reasoning && message.completed && message.completionStatus === 'completed'}
 		<div class="text-left text-muted-foreground py-2">No response</div>
 	{/if}
 </div>

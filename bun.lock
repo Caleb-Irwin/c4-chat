@@ -23,7 +23,7 @@
       },
       "devDependencies": {
         "@internationalized/date": "^3.8.1",
-        "@lucide/svelte": "^0.513.0",
+        "@lucide/svelte": "^0.515.0",
         "@sveltejs/adapter-auto": "^6.0.0",
         "@sveltejs/kit": "^2.16.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.0",
@@ -128,7 +128,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.25", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ=="],
 
-    "@lucide/svelte": ["@lucide/svelte@0.513.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-XwBQMQkMlr9qp9yVg+epx5MzhBBrqul8atO00y/ZfhlKRJuQZVmq3ELibApqyBtj9ys0Ai4FH/SZcODTUFYXig=="],
+    "@lucide/svelte": ["@lucide/svelte@0.515.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-CEAyqcZmNBfYzVgaRmK2RFJP5tnbXxekRyDk0XX/eZQRfsJmkDvmQwXNX8C869BgNeryzmrRyjHhUL6g9ZOHNA=="],
 
     "@mmailaender/convex-auth-svelte": ["@mmailaender/convex-auth-svelte@0.0.2", "", { "dependencies": { "cookie": "^1.0.2", "is-network-error": "^1.1.0", "jwt-decode": "^4.0.0", "path-to-regexp": "^8.2.0" }, "peerDependencies": { "@auth/core": "^0.39.1", "@convex-dev/auth": "^0.0.87", "@sveltejs/kit": "^2.21.0", "convex": "^1.24.3", "convex-svelte": "^0.0.11" } }, "sha512-CmF1Spw9zuoW9l7pjm96/sXEWluthdREhBcdx2GuTD+HRdZ42ROLahMd+AuAhOC3smCXWwrIsHLWml3GVbn7eg=="],
 

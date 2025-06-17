@@ -3,11 +3,9 @@ import type { Doc, Id } from '../convex/_generated/dataModel';
 import { useConvexClient, useQuery } from 'convex-svelte';
 import { api } from '../convex/_generated/api';
 import { goto } from '$app/navigation';
+import type { MessageRequestObject } from '../convex/messages';
 
-interface SendMessageParams {
-	message: string;
-	model: string;
-}
+type SendMessageParams = Omit<MessageRequestObject, 'threadId'>;
 
 interface Chat {
 	sendMessage: (msg: SendMessageParams) => Promise<void>;
@@ -86,7 +84,7 @@ export class ChatClass implements Chat {
 		}
 	}
 
-	async sendMessage({ message, model }: SendMessageParams): Promise<void> {
+	async sendMessage(msg: SendMessageParams): Promise<void> {
 		this.generatingMessageText = null;
 
 		if (!this.threadId) {
@@ -100,8 +98,7 @@ export class ChatClass implements Chat {
 			},
 			body: JSON.stringify({
 				threadId: this.threadId,
-				userMessage: message,
-				model
+				...msg
 			})
 		});
 

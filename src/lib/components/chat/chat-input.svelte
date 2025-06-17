@@ -10,6 +10,10 @@
 	import { browser } from '$app/environment';
 	import type { ModelSummary } from '../../../convex/models';
 	import { CONF } from '../../../conf';
+	import Brain from '@lucide/svelte/icons/brain';
+	import * as Popover from '../ui/popover';
+	import Check from '@lucide/svelte/icons/check';
+	import { useUser } from '$lib/user.svelte';
 
 	interface Props {
 		models: ModelSummary[];
@@ -18,9 +22,23 @@
 	let { models }: Props = $props();
 
 	const chatManager = useChatManager();
+	const user = useUser();
+
 	let text = $state(''),
 		modelId = $state(''),
-		lastThreadId = $state<string | null>('x');
+		lastThreadId = $state<string | null>('x'),
+		reasoningPower = $state<'default' | 'low' | 'medium' | 'high'>('default'),
+		reasoningSelected = $derived(reasoningPower !== 'default'),
+		searchSelected = $derived(false),
+		attachSelected = $derived(false),
+		isPremium = $derived(!!user.row?.openRouterKey);
+
+	const reasoningOptions = [
+		{ value: 'default', label: 'Default' },
+		{ value: 'low', label: 'Low' },
+		{ value: 'medium', label: 'Medium' },
+		{ value: 'high', label: 'High' }
+	] as const;
 
 	$effect(() => {
 		if (browser && chatManager.threadId !== lastThreadId) {
@@ -33,7 +51,12 @@
 
 	function sendMessage() {
 		if (text.trim()) {
-			chatManager.sendMessage({ message: text, model: modelId });
+			chatManager.sendMessage({
+				userMessage: text,
+				model: modelId,
+				reasoning: reasoningPower,
+				search: searchSelected
+			});
 			text = '';
 		}
 	}
@@ -75,21 +98,73 @@
 			<div class="min-w-8 max-w-80 flex-shrink">
 				<ModelSelector {models} setModelId={(id) => (modelId = id)} />
 			</div>
+			<Popover.Root>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button
+							{...props}
+							variant="outline"
+							size="sm"
+							class="ml-1 rounded-full w-8 sm:w-auto flex-shrink-0 bg-transparent dark:bg-transparent border-accent-foreground/20 dark:border-accent-foreground/20 hover:bg-accent/80 dark:hover:bg-accent/80 {reasoningSelected
+								? 'bg-accent dark:bg-accent'
+								: ''}"
+							disabled={!isPremium}
+						>
+							<Brain />
+							<span class="hidden sm:inline">
+								{reasoningOptions.find((option) => option.value === reasoningPower)?.label}
+							</span>
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-48 p-2">
+					<Popover.Close class="w-full">
+						<div class="space-y-1 w-full">
+							{#each reasoningOptions as option}
+								<button
+									type="button"
+									class="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+									onclick={() => (reasoningPower = option.value)}
+								>
+									<div class="flex flex-col justify-start">
+										<span class="text-left">{option.label} </span>
+										{#if option.value === 'default'}
+											<span class="text-xs text-muted-foreground">May be disabled</span>
+										{/if}
+									</div>
+									{#if reasoningPower === option.value}
+										<Check class="size-4" />
+									{/if}
+								</button>
+							{/each}
+						</div>
+					</Popover.Close>
+				</Popover.Content>
+			</Popover.Root>
 			<Button
 				variant="outline"
 				size="sm"
-				class="ml-1 rounded-full w-8 lg:w-auto flex-shrink-0 bg-transparent dark:bg-transparent"
+				class="ml-1 rounded-full w-8 sm:w-auto flex-shrink-0 bg-transparent dark:bg-transparent border-accent-foreground/20 dark:border-accent-foreground/20 hover:bg-accent/80 dark:hover:bg-accent/80 {searchSelected
+					? 'bg-accent dark:bg-accent'
+					: ''}"
+				{...searchSelected ? { 'aria-pressed': 'true' } : {}}
+				disabled={!isPremium}
+				onclick={() => (searchSelected = !searchSelected)}
 			>
 				<Globe />
-				<span class="hidden lg:inline"> Search </span>
+				<span class="hidden sm:inline"> Search </span>
 			</Button>
 			<Button
 				variant="outline"
 				size="sm"
-				class="ml-1 rounded-full w-8 lg:w-auto flex-shrink-0 bg-transparent dark:bg-transparent"
+				class="ml-1 rounded-full w-8 sm:w-auto flex-shrink-0 bg-transparent dark:bg-transparent border-accent-foreground/20 dark:border-accent-foreground/20 hover:bg-accent/80 dark:hover:bg-accent/80 {attachSelected
+					? 'bg-accent dark:bg-accent'
+					: ''}"
+				disabled={!isPremium}
+				onclick={() => (attachSelected = !attachSelected)}
 			>
 				<Paperclip />
-				<span class="hidden lg:inline"> Attach </span>
+				<span class="hidden sm:inline"> Attach </span>
 			</Button>
 			<div class="flex-grow"></div>
 			<Button

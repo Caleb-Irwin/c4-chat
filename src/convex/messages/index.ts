@@ -74,7 +74,14 @@ async function ensurePermissions(ctx: MutationCtx, messageId: Id<'messages'>): P
 const messageRequestObject = {
 	threadId: v.id('threads'),
 	userMessage: v.string(),
-	model: v.string()
+	model: v.string(),
+	reasoning: v.union(
+		v.literal('default'),
+		v.literal('low'),
+		v.literal('medium'),
+		v.literal('high')
+	),
+	search: v.boolean()
 };
 
 const messageRequestVerifier = v.object(messageRequestObject);
@@ -159,6 +166,8 @@ export const startMessage = internalMutation({
 			lastModelUsed: args.model
 		});
 
+		const isPremium = !!userRow.openRouterKey;
+
 		const modelRow = await ctx.db
 			.query('openRouterModels')
 			.withIndex('by_open_router_id', (q) => q.eq('id', args.model))
@@ -167,7 +176,7 @@ export const startMessage = internalMutation({
 			console.error('Model not found:', args.model);
 			throw new Error('Model not found');
 		}
-		if (!userRow.openRouterKey && !CONF.freeModelIds.includes(modelRow.id as any)) {
+		if (!isPremium && !CONF.freeModelIds.includes(modelRow.id as any)) {
 			throw new Error(
 				'That is not a free model, please connect your OpenRouter account to use it.'
 			);
@@ -179,12 +188,20 @@ export const startMessage = internalMutation({
 			model: args.model,
 			completed: false,
 			message: '',
+			reasoning: '',
 			attachments: []
 		});
 
 		const messageBody = {
 			model: modelRow.id,
 			messages: await getBodyMessage(ctx, messageId),
+			reasoning:
+				isPremium && args.reasoning !== 'default'
+					? {
+							effort: args.reasoning,
+							exclude: false
+						}
+					: undefined,
 			stream: true
 		};
 
@@ -214,7 +231,8 @@ export const stopMessage = mutation({
 export const updateGeneratingMessage = internalMutation({
 	args: {
 		messageId: v.id('messages'),
-		message: v.string()
+		message: v.string(),
+		reasoning: v.string()
 	},
 	handler: async (ctx, args) => {
 		const msg = await ctx.db.get(args.messageId);
@@ -222,7 +240,7 @@ export const updateGeneratingMessage = internalMutation({
 			return {
 				deleted: true
 			};
-		await ctx.db.patch(args.messageId, { message: args.message });
+		await ctx.db.patch(args.messageId, { message: args.message, reasoning: args.reasoning });
 		return {
 			completionStatus: msg.completionStatus
 		};
@@ -250,13 +268,15 @@ export const setStopped = internalMutation({
 export const completeMessage = internalMutation({
 	args: {
 		messageId: v.id('messages'),
-		message: v.string()
+		message: v.string(),
+		reasoning: v.string()
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.patch(args.messageId, {
 			completed: true,
 			completionStatus: 'completed',
-			message: args.message
+			message: args.message,
+			reasoning: args.reasoning
 		});
 		const { thread } = (await ctx.db.get(args.messageId))!;
 		await ctx.db.patch(thread, { generating: false });
@@ -287,11 +307,11 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 
 		try {
 			let lastChunkUpdate: number | null = null;
-			const resString = await streamedOpenRouterRequest({
+			const { message, reasoning } = await streamedOpenRouterRequest({
 				body: messageBody,
 				openRouterApiKey: key,
 				outputWriter: writer,
-				onChunkUpdate: async (fullResponseSoFar: string, abort) => {
+				onChunkUpdate: async (fullResponseSoFar: string, fullReasoningSoFar, abort) => {
 					const now = Date.now();
 					if (lastChunkUpdate === null || now - lastChunkUpdate > 500) {
 						lastChunkUpdate = now;
@@ -299,7 +319,8 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 							internal.messages.updateGeneratingMessage,
 							{
 								messageId,
-								message: fullResponseSoFar
+								message: fullResponseSoFar,
+								reasoning: fullReasoningSoFar
 							}
 						);
 						if (completionStatus === 'stopped' || deleted) {
@@ -310,7 +331,8 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 			});
 			await ctx.runMutation(internal.messages.completeMessage, {
 				messageId,
-				message: resString
+				message,
+				reasoning
 			});
 		} catch (e) {
 			console.error('Error in streamedOpenRouterRequest:', e);

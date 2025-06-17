@@ -3,6 +3,7 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { useUser } from '$lib/user.svelte';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '../../convex/_generated/api';
@@ -13,6 +14,7 @@
 	import Zap from '@lucide/svelte/icons/zap';
 	import CheckCircle from '@lucide/svelte/icons/check-circle';
 	import AlertCircle from '@lucide/svelte/icons/alert-circle';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { CONF } from '../../conf';
 	import OpenRouter from './OpenRouter.svelte';
 
@@ -23,6 +25,8 @@
 
 	let isSigningOut = $state(false);
 	let isSavingKey = $state(false);
+	let isDeletingAccount = $state(false);
+	let deleteDialogOpen = $state(false);
 	let openRouterKey = $state('');
 	let keyUpdateMessage = $state('');
 
@@ -58,6 +62,22 @@
 		}
 	};
 
+	const handleDeleteAccount = async () => {
+		isDeletingAccount = true;
+
+		try {
+			await client.mutation(api.users.deleteAccount, {});
+			// Redirect to home page after successful deletion
+			window.location.href = '/';
+		} catch (error) {
+			console.error('Failed to delete account:', error);
+			alert('Failed to delete account. Please try again.');
+		} finally {
+			isDeletingAccount = false;
+			deleteDialogOpen = false;
+		}
+	};
+
 	const avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
 </script>
 
@@ -66,7 +86,7 @@
 		<p class="text-muted-foreground text-center">Please sign in to access your account settings.</p>
 	</div>
 {:else if user.row}
-	<div class="w-full max-w-6xl mx-auto p-6 space-y-6">
+	<div class="w-full max-w-6xl mx-auto p-6 space-y-6 pt-12">
 		<div class="flex items-center justify-between">
 			<h1 class="text-3xl font-bold">Account Settings</h1>
 			<Button
@@ -267,7 +287,7 @@
 				<Card.Content>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div class="border rounded-lg p-6">
-							<h3 class="text-lg font-semibold mb-4 text-center">Basic Plan</h3>
+							<h3 class="text-lg font-semibold mb-1 text-center">Basic Plan</h3>
 							<div class="text-center mb-4">
 								<span class="text-3xl font-bold">Free</span>
 								<p class="text-sm text-muted-foreground">Through Caleb</p>
@@ -291,7 +311,7 @@
 						</div>
 
 						<div class="border rounded-lg p-6 bg-primary/5 border-primary/20">
-							<h3 class="text-lg font-semibold mb-4 text-center">Pro Plan</h3>
+							<h3 class="text-lg font-semibold mb-1 text-center">Pro Plan</h3>
 							<div class="text-center mb-4">
 								<span class="text-3xl font-bold">Pay-per-use</span>
 								<p class="text-sm text-muted-foreground">Through OpenRouter</p>
@@ -345,6 +365,66 @@
 					</div>
 				</Card.Content>
 			</Card.Root>
+
+			<!-- Danger Zone -->
+			<Card.Root class="lg:col-span-2 border-red-200 dark:border-red-800">
+				<Card.Header>
+					<div class="flex items-center space-x-2">
+						<Trash2 class="h-5 w-5 text-red-500" />
+						<h2 class="text-xl font-semibold text-red-600 dark:text-red-400">Danger Zone</h2>
+					</div>
+					<p class="text-muted-foreground">
+						Irreversible actions that will permanently affect your account.
+					</p>
+				</Card.Header>
+				<Card.Content>
+					<div
+						class="bg-red-50 dark:bg-red-950/20 p-4 rounded-lg border border-red-200 dark:border-red-800"
+					>
+						<h3 class="font-medium text-red-800 dark:text-red-200 mb-2">Delete Account</h3>
+						<p class="text-sm text-red-700 dark:text-red-300 mb-4">
+							This action cannot be undone. This will permanently delete your account, all your
+							conversations, and remove all associated data from our servers.
+						</p>
+						<Button
+							variant="destructive"
+							class="bg-red-600 hover:bg-red-700"
+							onclick={() => (deleteDialogOpen = true)}
+						>
+							<Trash2 class="mr-2 h-4 w-4" />
+							Delete Account
+						</Button>
+					</div>
+				</Card.Content>
+			</Card.Root>
 		</div>
 	</div>
 {/if}
+
+<AlertDialog.Root bind:open={deleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This action cannot be undone. This will permanently delete your account and remove all your
+				data from our servers, including:
+				<ul class="list-disc ml-6 mt-2">
+					<li>All your conversations and messages</li>
+					<li>Your account settings and preferences</li>
+					<li>Any uploaded files or attachments</li>
+				</ul>
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action onclick={handleDeleteAccount} disabled={isDeletingAccount}>
+				{#if isDeletingAccount}
+					<Loader2Icon class="animate-spin mr-2 h-4 w-4" />
+				{:else}
+					<Trash2 class="mr-2 h-4 w-4" />
+				{/if}
+				Delete Forever
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

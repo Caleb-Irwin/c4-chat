@@ -7,10 +7,14 @@ export async function streamedOpenRouterRequest({
 	body: {};
 	openRouterApiKey: string;
 	outputWriter: WritableStreamDefaultWriter<Uint8Array>;
-	onChunkUpdate: (fullResponseSoFar: string, abort: () => void) => Promise<void>;
-}): Promise<string> {
+	onChunkUpdate: (
+		fullResponseSoFar: string,
+		fullReasoning: string,
+		abort: () => void
+	) => Promise<void>;
+}): Promise<{ message: string; reasoning: string }> {
 	const controller = new AbortController(),
-		resObj = { buffer: '', completeString: '' },
+		resObj = { buffer: '', completeString: '', completeReasoning: '' },
 		decoder = new TextDecoder(),
 		encoder = new TextEncoder();
 
@@ -52,15 +56,26 @@ export async function streamedOpenRouterRequest({
 
 					try {
 						const parsed = JSON.parse(data);
+						console.log('Parsed response:', parsed);
 						const content = parsed.choices[0].delta.content;
+						const reasoning = parsed.choices[0].delta.reasoning;
 						if (content) {
 							resObj.completeString += content;
 							outputWriter.write(encoder.encode(content));
-							await onChunkUpdate(resObj.completeString, () => controller.abort());
+						}
+						if (reasoning) {
+							resObj.completeReasoning += reasoning;
+						}
+						if (content || reasoning) {
+							await onChunkUpdate(resObj.completeString, resObj.completeReasoning, () =>
+								controller.abort()
+							);
 						}
 					} catch (e) {
 						// Ignore invalid JSON
 					}
+				} else {
+					console.warn('Unexpected line format:', line);
 				}
 			}
 		}
@@ -71,5 +86,5 @@ export async function streamedOpenRouterRequest({
 			throw error;
 		}
 	}
-	return resObj.completeString;
+	return { message: resObj.completeString, reasoning: resObj.completeReasoning };
 }

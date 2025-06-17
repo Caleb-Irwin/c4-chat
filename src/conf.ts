@@ -15,7 +15,7 @@ export const CONF = {
 		'deepseek/deepseek-chat-v3-0324'
 	],
 	titleGenerationModelId: 'google/gemini-2.0-flash-lite-001',
-	titleGenerationPrompt: 'Name thread, returning only your TITLE. First message: ',
+	titleGenerationPrompt: 'NAME THREAD, returning ONLY TITLE TEXT. First message: ',
 	titleGenerationMaxTokens: 40,
 	titleGenerationMessageCharacters: 300,
 	systemPrompt: 'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}.',

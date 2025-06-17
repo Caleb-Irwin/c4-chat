@@ -33,21 +33,7 @@ export interface ModelSummary {
 	creator: Creators | null;
 	supportsImages: boolean;
 	supportsFiles: boolean;
-}
-
-export interface Model extends ModelSummary {
-	description: string;
-	contextLength: number;
-	pricing: {
-		prompt: string;
-		completion: string;
-		request: string;
-		image: string;
-		web_search: string;
-		internal_reasoning: string;
-		input_cache_read: string;
-		input_cache_write: string;
-	};
+	supportsReasoning: boolean;
 }
 
 export const allModelSummaries = action({
@@ -75,49 +61,12 @@ export const allModelSummaries = action({
 				id: model.id,
 				creator: creators.includes(creator as Creators) ? (creator as Creators) : null,
 				supportsImages: model.architecture.input_modalities.includes('image'),
-				supportsFiles: model.architecture.input_modalities.includes('file')
+				supportsFiles: model.architecture.input_modalities.includes('file'),
+				supportsReasoning: model.supported_parameters?.includes('reasoning') || false
 			};
 			result.push(newModel);
 		}
 
 		return result;
-	}
-});
-
-export const getModelInfo = query({
-	args: {
-		modelId: v.string()
-	},
-	handler: async (ctx, { modelId }) => {
-		const model = await ctx.db
-			.query('openRouterModels')
-			.withIndex('by_open_router_id', (q) => q.eq('id', modelId))
-			.first();
-
-		if (!model) {
-			throw new Error(`Model with ID ${modelId} not found.`);
-		}
-
-		const creator = model.id.split('/')[0];
-
-		return {
-			name: model.name,
-			id: model.id,
-			description: model.description,
-			creator: creators.includes(creator as Creators) ? (creator as Creators) : null,
-			contextLength: model.context_length || 0,
-			supportsImages: model.architecture.input_modalities.includes('image'),
-			supportsFiles: model.architecture.input_modalities.includes('file'),
-			pricing: {
-				prompt: model.pricing.prompt,
-				completion: model.pricing.completion,
-				request: model.pricing.request,
-				image: model.pricing.image,
-				web_search: model.pricing.web_search,
-				internal_reasoning: model.pricing.internal_reasoning,
-				input_cache_read: model.pricing.input_cache_read,
-				input_cache_write: model.pricing.input_cache_write
-			}
-		} satisfies Model;
 	}
 });
