@@ -12,7 +12,7 @@
 
 <div class="flex flex-col items-center justify-center">
 	<div class="p-1 w-full">
-		{#if user.row?.freeRequestsLeft && user.row?.freeRequestsLeft <= 10}
+		{#if user.row?.freeRequestsLeft && user.row?.freeRequestsLeft <= 9}
 			<p
 				class="text-xs text-center p-0.5 {user.isAnonymous ? 'py-2' : 'py-1'} text-muted-foreground"
 			>
@@ -20,7 +20,7 @@
 			</p>
 		{/if}
 
-		{#if user.row?.accountCreditsInCentThousandths && user.row?.accountCreditsInCentThousandths <= 10 * 1000}
+		{#if !user.isAnonymous && user.row?.accountCreditsInCentThousandths && user.row?.accountCreditsInCentThousandths <= 10 * 1000}
 			<p
 				class="text-xs text-center p-0.5 {user.isAnonymous ? 'py-2' : 'py-1'} text-muted-foreground"
 			>
@@ -81,7 +81,7 @@
 				<p class="flex-grow px-3 text-accent-foreground flex flex-col">
 					<span class="truncate text-sm"> {user.row?.name}</span>
 					<span class="text-xs text-muted-foreground">
-						{user.row?.openRouterConnected === true ? 'Pro' : 'Basic'}</span
+						{user.row?.openRouterKey ? 'Pro' : 'Basic'}</span
 					>
 				</p>
 			</a>

@@ -140,7 +140,7 @@ export const startMessage = internalMutation({
 			await ctx.scheduler.runAfter(0, internal.threads.generateThreadName, {
 				threadId: args.threadId,
 				message: args.userMessage,
-				key: process.env.OPENROUTER_API_KEY!
+				key: userRow.openRouterKey ?? process.env.OPENROUTER_API_KEY!
 			});
 		}
 
@@ -167,7 +167,7 @@ export const startMessage = internalMutation({
 			console.error('Model not found:', args.model);
 			throw new Error('Model not found');
 		}
-		if (!userRow.openRouterConnected && !CONF.freeModelIds.includes(modelRow.id as any)) {
+		if (!userRow.openRouterKey && !CONF.freeModelIds.includes(modelRow.id as any)) {
 			throw new Error(
 				'That is not a free model, please connect your OpenRouter account to use it.'
 			);
@@ -191,7 +191,7 @@ export const startMessage = internalMutation({
 		return {
 			messageId,
 			messageBody,
-			key: process.env.OPENROUTER_API_KEY!
+			key: userRow.openRouterKey ?? process.env.OPENROUTER_API_KEY!
 		};
 	}
 });

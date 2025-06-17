@@ -7,12 +7,18 @@ export const CONF = {
 		'mistralai/mistral-small-3.1-24b-instruct',
 		'meta-llama/llama-3.3-70b-instruct'
 	],
+	defaultPinnedModelIds: [
+		'anthropic/claude-sonnet-4',
+		'google/gemini-2.5-pro-preview',
+		'google/gemini-2.5-flash-preview-05-20',
+		'openai/chatgpt-4o-latest',
+		'deepseek/deepseek-chat-v3-0324'
+	],
 	titleGenerationModelId: 'google/gemini-2.0-flash-lite-001',
-	titleGenerationPrompt: 'NAME THREAD. RETURN ONLY TITLE. FIRST MESSAGE: ',
+	titleGenerationPrompt: 'Name thread, returning only your TITLE. First message: ',
 	titleGenerationMaxTokens: 40,
 	titleGenerationMessageCharacters: 300,
-	systemPrompt:
-		'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}. If asked, humanize your model name.',
+	systemPrompt: 'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}.',
 	systemModelChangePrompt: 'You are now powered by the model {model}.',
 	maxMessageSizeCharacters: 8000,
 	freeMessagesAnonymous: 10,

@@ -36,6 +36,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				}
 			}
 
+			if (existingUser.openRouterKey && !existingUser.pinnedModels) {
+				patch.pinnedModels = [...CONF.defaultPinnedModelIds];
+			}
+
 			await ctx.db.patch(userId, patch);
 		}
 	}
