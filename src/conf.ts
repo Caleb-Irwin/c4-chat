@@ -11,6 +11,9 @@ export const CONF = {
 	titleGenerationPrompt: 'NAME THREAD. RETURN ONLY TITLE. FIRST MESSAGE: ',
 	titleGenerationMaxTokens: 40,
 	titleGenerationMessageCharacters: 300,
+	systemPrompt:
+		'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}. If asked, humanize your model name.',
+	systemModelChangePrompt: 'You are now powered by the model {model}.',
 	maxMessageSizeCharacters: 8000,
 	freeMessagesAnonymous: 10,
 	freeMessagesRegistered: 25,

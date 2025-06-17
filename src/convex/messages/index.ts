@@ -100,9 +100,16 @@ async function getBodyMessage(
 
 	const messages = [...pastMessages, message!];
 
-	return messages.flatMap((msg) => {
+	return messages.flatMap((msg, i) => {
 		const res: openRouterMessages[] = [];
-		if (msg.systemMessage) res.push({ role: 'system', content: msg.systemMessage });
+		if (i === 0) {
+			res.push({ role: 'system', content: CONF.systemPrompt.replace('{model}', msg.model) });
+		} else if (msg.model !== messages[i - 1].model) {
+			res.push({
+				role: 'system',
+				content: CONF.systemModelChangePrompt.replace('{model}', msg.model)
+			});
+		}
 		res.push({ role: 'user', content: msg.userMessage });
 		if (msg.message) res.push({ role: 'assistant', content: msg.message });
 		return res;
@@ -141,15 +148,30 @@ export const startMessage = internalMutation({
 			!userRow.freeRequestsLeft ||
 			!userRow.accountCreditsInCentThousandths ||
 			userRow.freeRequestsLeft <= 0 ||
-			userRow.accountCreditsInCentThousandths <= 0
+			userRow.accountCreditsInCentThousandths < CONF.costPerMessageInCentThousandths
 		) {
 			throw new Error('Insufficient credits or requests');
 		}
 		await ctx.db.patch(args.userId, {
 			freeRequestsLeft: userRow.freeRequestsLeft - 1,
 			accountCreditsInCentThousandths:
-				userRow.accountCreditsInCentThousandths - CONF.costPerMessageInCentThousandths
+				userRow.accountCreditsInCentThousandths - CONF.costPerMessageInCentThousandths,
+			lastModelUsed: args.model
 		});
+
+		const modelRow = await ctx.db
+			.query('openRouterModels')
+			.withIndex('by_open_router_id', (q) => q.eq('id', args.model))
+			.first();
+		if (!modelRow) {
+			console.error('Model not found:', args.model);
+			throw new Error('Model not found');
+		}
+		if (!userRow.openRouterConnected && !CONF.freeModelIds.includes(modelRow.id as any)) {
+			throw new Error(
+				'That is not a free model, please connect your OpenRouter account to use it.'
+			);
+		}
 
 		const messageId = await ctx.db.insert('messages', {
 			thread: args.threadId,
@@ -157,12 +179,11 @@ export const startMessage = internalMutation({
 			model: args.model,
 			completed: false,
 			message: '',
-			attachments: [],
-			systemMessage: undefined
+			attachments: []
 		});
 
 		const messageBody = {
-			model: 'google/gemini-2.0-flash-001',
+			model: modelRow.id,
 			messages: await getBodyMessage(ctx, messageId),
 			stream: true
 		};

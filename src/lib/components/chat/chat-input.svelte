@@ -3,7 +3,6 @@
 	import Textarea from '../ui/textarea/textarea.svelte';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import ModelSelector from './model-selector.svelte';
-	import Brain from '@lucide/svelte/icons/brain';
 	import Globe from '@lucide/svelte/icons/globe';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
 	import Square from '@lucide/svelte/icons/square';
@@ -19,6 +18,7 @@
 
 	const chatManager = useChatManager();
 	let text = $state(''),
+		modelId = $state(''),
 		lastThreadId = $state<string | null>('x');
 
 	$effect(() => {
@@ -29,6 +29,13 @@
 			lastThreadId = chatManager.threadId;
 		}
 	});
+
+	function sendMessage() {
+		if (text.trim()) {
+			chatManager.sendMessage({ message: text, model: modelId });
+			text = '';
+		}
+	}
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-accent/80 shadow-sm backdrop-blur-xs">
@@ -38,9 +45,8 @@
 			e.preventDefault();
 			if (chatManager.generating) {
 				chatManager.chat?.stopGenerating();
-			} else if (text.trim()) {
-				chatManager.sendMessage({ message: text, model: 'todo' });
-				text = '';
+			} else {
+				sendMessage();
 			}
 		}}
 	>
@@ -54,26 +60,15 @@
 				onkeydown={(e) => {
 					if (e.key === 'Enter' && !e.shiftKey) {
 						e.preventDefault();
-						if (text.trim()) {
-							chatManager.sendMessage({ message: text, model: 'todo' });
-							text = '';
-						}
+						sendMessage();
 					}
 				}}
 			></Textarea>
 		</div>
 		<div class="flex align-middle items-end p-2 pt-1 overflow-hidden">
 			<div class="min-w-8 max-w-80 flex-shrink">
-				<ModelSelector {models} />
+				<ModelSelector {models} setModelId={(id) => (modelId = id)} />
 			</div>
-			<Button
-				variant="outline"
-				size="sm"
-				class="ml-1 rounded-full w-8 lg:w-auto flex-shrink-0 bg-transparent dark:bg-transparent"
-			>
-				<Brain />
-				<span class="hidden lg:inline"> Medium </span>
-			</Button>
 			<Button
 				variant="outline"
 				size="sm"

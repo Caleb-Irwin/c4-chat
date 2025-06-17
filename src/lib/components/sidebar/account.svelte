@@ -4,6 +4,7 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import OpenRouterIcon from './OpenRouter.svelte';
 	import { useUser } from '$lib/user.svelte';
+	import { Root } from '../ui/card';
 
 	const user = useUser(),
 		avatarSrc = $derived(user.row?.image ? `/img/${encodeURIComponent(user.row.image)}` : null);
@@ -17,6 +18,31 @@
 			>
 				You have <span class="font-semibold">{user.row?.freeRequestsLeft}</span> free requests left
 			</p>
+		{/if}
+
+		{#if user.row?.accountCreditsInCentThousandths && user.row?.accountCreditsInCentThousandths <= 10 * 1000}
+			<p
+				class="text-xs text-center p-0.5 {user.isAnonymous ? 'py-2' : 'py-1'} text-muted-foreground"
+			>
+				You have <span class="font-semibold"
+					>¢{(user.row?.accountCreditsInCentThousandths ?? 0) / 1000}</span
+				> in credits left
+			</p>
+		{/if}
+
+		{#if user.row?.freeRequestsLeft === 0 && !user.row.openRouterKey}
+			<Root class="mt-2 py-2 bg-red-200 border-red-700 text-sm mb-2">
+				<p class="pl-3 text-center text-red-700">
+					<span class="font-semibold">Zero</span> free requests left
+				</p>
+			</Root>
+		{:else if user.row?.accountCreditsInCentThousandths !== undefined && user.row?.accountCreditsInCentThousandths <= 100}
+			<Root class="mt-2 py-2 bg-yellow-200 border-yellow-700 text-sm mb-2">
+				<p class="pl-3 text-center text-yellow-700">
+					<span class="font-semibold">{user.row?.accountCreditsInCentThousandths}</span> account credits
+					left
+				</p>
+			</Root>
 		{/if}
 
 		{#if user.isAnonymous}

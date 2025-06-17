@@ -26,7 +26,9 @@ export default defineSchema({
 		freeRequestsLeft: v.optional(v.number()),
 		freeRequestsBillingCycle: v.optional(v.string()),
 		customSystemPrompt: v.optional(v.string()),
-		openRouterKey: v.optional(v.string())
+		openRouterKey: v.optional(v.string()),
+		lastModelUsed: v.optional(v.string()),
+		pinnedModels: v.optional(v.array(v.string()))
 	}).index('email', ['email']),
 	openRouterModels: openRouterModelsTable,
 	threads: defineTable({
@@ -47,7 +49,6 @@ export default defineSchema({
 		completed: v.boolean(),
 		completionStatus: v.optional(completionStatusUnion),
 		userMessage: v.string(),
-		systemMessage: v.optional(v.string()),
 		message: v.string(),
 		attachments: v.optional(
 			v.array(

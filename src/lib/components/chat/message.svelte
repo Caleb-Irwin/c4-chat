@@ -3,7 +3,7 @@
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import type { Doc } from '../../../convex/_generated/dataModel';
 	import MarkdownRenderer from './markdown-renderer.svelte';
-	import * as Card from '$lib/components/ui/card/index';
+	import { Root } from '../ui/card';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -48,17 +48,17 @@
 </div>
 
 {#if message.completed && message.completionStatus === 'error'}
-	<Card.Root class="mt-2 py-2 bg-red-200 border-red-700">
+	<Root class="mt-2 py-2 bg-red-200 border-red-700">
 		<p class="pl-3 text-center text-red-700">
 			<span class="font-semibold">Error</span> An error occurred while processing your request.
 		</p>
-	</Card.Root>
+	</Root>
 {:else if message.completed && message.completionStatus === 'stopped'}
-	<Card.Root class="mt-2 py-2 bg-accent">
+	<Root class="mt-2 py-2 bg-accent">
 		<p class="pl-3 text-center text-muted-foreground">
 			<span class="font-semibold">Request Stopped</span>
 		</p>
-	</Card.Root>
+	</Root>
 {/if}
 
 <div class="h-8"></div>

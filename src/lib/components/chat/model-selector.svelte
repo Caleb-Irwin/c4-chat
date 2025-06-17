@@ -17,9 +17,10 @@
 
 	interface Props {
 		models: ModelSummary[];
+		setModelId: (id: string) => void;
 	}
 
-	let { models }: Props = $props();
+	let { models, setModelId }: Props = $props();
 
 	const user = useUser();
 	let smallMode = $state(true);
@@ -28,11 +29,19 @@
 		return CONF.freeModelIds.includes(model.id as any);
 	});
 
-	let pinnedModels = $derived(user.isAnonymous ? freeModels : freeModels); //TODO
+	let pinnedModels = $derived(
+		!user.row?.openRouterKey
+			? freeModels
+			: models.filter((model) => user.row?.pinnedModels?.includes(model.id) ?? false)
+	);
 
 	let open = $state(false);
-	let value: string = $state(CONF.defaultModelId);
+	let value: string = $state(user.row?.lastModelUsed ?? CONF.defaultModelId);
 	let triggerRef = $state<HTMLButtonElement>(null!);
+
+	$effect(() => {
+		setModelId(value);
+	});
 
 	const selectedValue = $derived(models.find((m) => m.id === value)?.name);
 
@@ -78,8 +87,8 @@
 		<Command.Root>
 			<Command.Input placeholder="Search models..." bind:value={searchValue} />
 			<Command.List>
-				{#if searchValue}
-					<Command.Empty>No models found.</Command.Empty>
+				{#if searchValue || smallMode}
+					<Command.Empty>{searchValue ? 'No models found.' : 'No pinned models.'}</Command.Empty>
 				{/if}
 				{#if smallMode}
 					<Command.Group>
