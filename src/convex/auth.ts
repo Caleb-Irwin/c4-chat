@@ -3,6 +3,7 @@ import { Anonymous } from '@convex-dev/auth/providers/Anonymous';
 import Google from '@auth/core/providers/google';
 import { Doc } from './_generated/dataModel';
 import { CONF } from '../conf';
+import { getBillingPeriod } from './messages/billing';
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [Anonymous(), Google],
@@ -21,7 +22,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 			if (!existingUser) {
 				console.error('User not found after creation:', userId);
 			} else if (existingUser.accountCreditsInCentThousandths === undefined) {
-				const billingPeriod = `${new Date().getUTCFullYear()}-${new Date().getUTCMonth()}`;
+				const billingPeriod = getBillingPeriod();
 				if (existingUser.isAnonymous) {
 					patch.accountCreditsInCentThousandths =
 						CONF.freeMessagesAnonymous * CONF.costPerMessageInCentThousandths;

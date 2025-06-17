@@ -5,6 +5,7 @@
 	import MarkdownRenderer from './markdown-renderer.svelte';
 	import { Root } from '../ui/card';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -42,7 +43,7 @@
 		<Accordion.Root type="single">
 			<Accordion.Item value="item-1">
 				<Accordion.Trigger class="justify-start gap-1 no-underline!">
-					<div class="flex font-semibold">
+					<div class="flex">
 						{#if !message.message && !message.completed}
 							<LoaderCircle class="animate-spin  text-primary mr-2 size-5!" />
 						{/if}
@@ -50,9 +51,8 @@
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content>
-					<p class="prose dark:prose-invert text-sm">
-						{message.reasoning}
-					</p>
+					<MarkdownRenderer md={message.reasoning} />
+					<Separator class="mt-4" />
 				</Accordion.Content>
 			</Accordion.Item>
 		</Accordion.Root>

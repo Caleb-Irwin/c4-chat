@@ -6,6 +6,7 @@ import { internal } from '.././_generated/api';
 import { streamedOpenRouterRequest } from './streamedRequest';
 import { Id } from '../_generated/dataModel';
 import { CONF } from '../../conf';
+import { handleBilling } from './billing';
 
 export const getFinishedMessages = query({
 	args: {
@@ -139,6 +140,9 @@ export const startMessage = internalMutation({
 			console.error('Thread not found:', args.threadId);
 			throw new Error('Thread not found');
 		}
+
+		await handleBilling(ctx, userRow, args.model);
+
 		await ctx.db.patch(args.threadId, {
 			generating: true,
 			lastModified: Date.now()
@@ -151,23 +155,7 @@ export const startMessage = internalMutation({
 			});
 		}
 
-		if (
-			!userRow.freeRequestsLeft ||
-			!userRow.accountCreditsInCentThousandths ||
-			userRow.freeRequestsLeft <= 0 ||
-			userRow.accountCreditsInCentThousandths < CONF.costPerMessageInCentThousandths
-		) {
-			throw new Error('Insufficient credits or requests');
-		}
-		await ctx.db.patch(args.userId, {
-			freeRequestsLeft: userRow.freeRequestsLeft - 1,
-			accountCreditsInCentThousandths:
-				userRow.accountCreditsInCentThousandths - CONF.costPerMessageInCentThousandths,
-			lastModelUsed: args.model
-		});
-
 		const isPremium = !!userRow.openRouterKey;
-
 		const modelRow = await ctx.db
 			.query('openRouterModels')
 			.withIndex('by_open_router_id', (q) => q.eq('id', args.model))
@@ -184,7 +172,7 @@ export const startMessage = internalMutation({
 
 		const messageId = await ctx.db.insert('messages', {
 			thread: args.threadId,
-			userMessage: args.userMessage,
+			userMessage: args.userMessage.slice(0, CONF.maxMessageSizeCharacters),
 			model: args.model,
 			completed: false,
 			message: '',
