@@ -8,11 +8,27 @@
 	import Paperclip from '@lucide/svelte/icons/paperclip';
 	import Square from '@lucide/svelte/icons/square';
 	import { useChatManager } from '$lib/chats.svelte';
+	import { browser } from '$app/environment';
+	import type { ModelSummary } from '../../../convex/models';
 
-	let {}: {} = $props();
+	interface Props {
+		models: ModelSummary[];
+	}
 
-	let text = $state('');
+	let { models }: Props = $props();
+
 	const chatManager = useChatManager();
+	let text = $state(''),
+		lastThreadId = $state<string | null>('x');
+
+	$effect(() => {
+		if (browser && chatManager.threadId !== lastThreadId) {
+			setTimeout(() => {
+				document.getElementById('chat-input')?.focus();
+			}, 100);
+			lastThreadId = chatManager.threadId;
+		}
+	});
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-accent/80 shadow-sm backdrop-blur-xs">
@@ -48,7 +64,7 @@
 		</div>
 		<div class="flex align-middle items-end p-2 pt-1 overflow-hidden">
 			<div class="min-w-8 max-w-80 flex-shrink">
-				<ModelSelector />
+				<ModelSelector {models} />
 			</div>
 			<Button
 				variant="outline"

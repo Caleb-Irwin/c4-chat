@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { useChatManager } from '$lib/chats.svelte';
 	import ChatInput from '$lib/components/chat/chat-input.svelte';
+	import type { LayoutData } from './$types';
 
-	let { children } = $props();
+	let { children, data }: { children: any; data: LayoutData } = $props();
+
+	// Models are now available in this variable
+	const models = data.models;
 
 	useChatManager();
 </script>
@@ -17,7 +21,7 @@
 		<div class="w-full flex justify-center px-2">
 			<div class="relative w-full max-w-3xl">
 				<div class="absolute bottom-0 w-full">
-					<ChatInput />
+					<ChatInput {models} />
 				</div>
 			</div>
 		</div>

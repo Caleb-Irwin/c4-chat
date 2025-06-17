@@ -2,6 +2,7 @@ import { convexAuth } from '@convex-dev/auth/server';
 import { Anonymous } from '@convex-dev/auth/providers/Anonymous';
 import Google from '@auth/core/providers/google';
 import { Doc } from './_generated/dataModel';
+import { CONF } from '../conf';
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [Anonymous(), Google],
@@ -24,12 +25,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 			} else if (existingUser.accountCreditsInCentThousandths === undefined) {
 				const billingPeriod = `${new Date().getUTCFullYear()}-${new Date().getUTCMonth()}`;
 				if (existingUser.isAnonymous) {
-					patch.accountCreditsInCentThousandths = 1000 * 1;
-					patch.freeRequestsLeft = 10;
+					patch.accountCreditsInCentThousandths =
+						CONF.freeMessagesAnonymous * CONF.costPerMessageInCentThousandths;
+					patch.freeRequestsLeft = CONF.freeMessagesAnonymous;
 					patch.freeRequestsBillingCycle = billingPeriod;
 				} else {
-					patch.accountCreditsInCentThousandths = 1000 * 100;
-					patch.freeRequestsLeft = 50;
+					patch.accountCreditsInCentThousandths = CONF.monthlyCreditsInCentThousandthsRegistered;
+					patch.freeRequestsLeft = CONF.freeMessagesRegistered;
 					patch.freeRequestsBillingCycle = billingPeriod;
 				}
 			}

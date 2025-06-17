@@ -5,6 +5,7 @@ import { validate } from 'convex-helpers/validators';
 import { internal } from '.././_generated/api';
 import { streamedOpenRouterRequest } from './streamedRequest';
 import { Id } from '../_generated/dataModel';
+import { CONF } from '../../conf';
 
 export const getFinishedMessages = query({
 	args: {
@@ -131,7 +132,7 @@ export const startMessage = internalMutation({
 		if (thread.title === 'New Thread') {
 			await ctx.scheduler.runAfter(0, internal.threads.generateThreadName, {
 				threadId: args.threadId,
-				message: args.userMessage.slice(0, 300),
+				message: args.userMessage,
 				key: process.env.OPENROUTER_API_KEY!
 			});
 		}
@@ -146,7 +147,8 @@ export const startMessage = internalMutation({
 		}
 		await ctx.db.patch(args.userId, {
 			freeRequestsLeft: userRow.freeRequestsLeft - 1,
-			accountCreditsInCentThousandths: userRow.accountCreditsInCentThousandths - 100
+			accountCreditsInCentThousandths:
+				userRow.accountCreditsInCentThousandths - CONF.costPerMessageInCentThousandths
 		});
 
 		const messageId = await ctx.db.insert('messages', {
@@ -181,8 +183,10 @@ export const stopMessage = mutation({
 		await ensurePermissions(ctx, args.messageId);
 		const message = await ctx.db.get(args.messageId);
 		if (message && !message.completed) {
-			await ctx.db.patch(args.messageId, { completionStatus: 'stopped' });
+			await ctx.db.patch(args.messageId, { completionStatus: 'stopped', completed: true });
 		}
+		const { thread } = (await ctx.db.get(args.messageId))!;
+		await ctx.db.patch(thread, { generating: false });
 	}
 });
 
@@ -219,14 +223,7 @@ export const setStopped = internalMutation({
 	args: {
 		messageId: v.id('messages')
 	},
-	handler: async (ctx, args) => {
-		await ctx.db.patch(args.messageId, {
-			completed: true,
-			completionStatus: 'stopped'
-		});
-		const { thread } = (await ctx.db.get(args.messageId))!;
-		await ctx.db.patch(thread, { generating: false });
-	}
+	handler: async (ctx, args) => {}
 });
 
 export const completeMessage = internalMutation({
@@ -284,14 +281,8 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 								message: fullResponseSoFar
 							}
 						);
-						if (completionStatus === 'stopped') {
-							await ctx.runMutation(internal.messages.setStopped, {
-								messageId
-							});
+						if (completionStatus === 'stopped' || deleted) {
 							abort();
-						} else if (deleted) {
-							abort();
-							return;
 						}
 					}
 				}

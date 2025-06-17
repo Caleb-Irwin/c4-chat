@@ -1,44 +1,60 @@
 <script lang="ts">
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import ChevronUp from '@lucide/svelte/icons/chevron-up';
+	import Expand from '@lucide/svelte/icons/expand';
+	import Shrink from '@lucide/svelte/icons/shrink';
 	import { tick } from 'svelte';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { cn } from '$lib/utils.js';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '../../../convex/_generated/api';
+	import type { ModelSummary } from '../../../convex/models';
+	import Logo from './logo.svelte';
+	import { CONF } from '../../../conf';
+	import { useUser } from '$lib/user.svelte';
+	import Separator from '../ui/separator/separator.svelte';
+	import ModelSelectorRow from './model-selector-row.svelte';
+	import { shortName } from './shortName';
 
-	const query = useQuery(
-		api.models.allNames,
-		{},
-		{
-			keepPreviousData: true
-		}
-	);
+	interface Props {
+		models: ModelSummary[];
+	}
 
-	const frameworks = $derived(
-		query.data?.map(({ name, id }) => ({
-			label: name,
-			value: id
-		})) ?? []
-	);
+	let { models }: Props = $props();
+
+	const user = useUser();
+	let smallMode = $state(true);
+
+	let freeModels = models.filter((model) => {
+		return CONF.freeModelIds.includes(model.id as any);
+	});
+
+	let pinnedModels = $derived(user.isAnonymous ? freeModels : freeModels); //TODO
 
 	let open = $state(false);
-	let value = $state('');
+	let value: string = $state(CONF.defaultModelId);
 	let triggerRef = $state<HTMLButtonElement>(null!);
 
-	const selectedValue = $derived(frameworks.find((f) => f.value === value)?.label);
+	const selectedValue = $derived(models.find((m) => m.id === value)?.name);
 
-	// We want to refocus the trigger button when the user selects
-	// an item from the list so users can continue navigating the
-	// rest of the form with the keyboard.
 	function closeAndFocusTrigger() {
 		open = false;
 		tick().then(() => {
 			triggerRef.focus();
 		});
 	}
+
+	const modelGroups: { name: string; models: ModelSummary[]; open: boolean }[] = $state([
+		{ name: 'OpenAI', models: models.filter((m) => m.creator === 'openai'), open: false },
+		{ name: 'Anthropic', models: models.filter((m) => m.creator === 'anthropic'), open: false },
+		{ name: 'Google', models: models.filter((m) => m.creator === 'google'), open: false },
+		{ name: 'xAI', models: models.filter((m) => m.creator === 'x-ai'), open: false },
+		{ name: 'Meta', models: models.filter((m) => m.creator === 'meta-llama'), open: false },
+		{ name: 'DeepSeek', models: models.filter((m) => m.creator === 'deepseek'), open: false },
+		{ name: 'Qwen', models: models.filter((m) => m.creator === 'qwen'), open: false },
+		{ name: 'Other', models: models.filter((m) => m.creator === null), open: false }
+	]);
+
+	let searchValue = $state('');
 </script>
 
 <Popover.Root bind:open>
@@ -52,32 +68,82 @@
 				aria-expanded={open}
 			>
 				<span class="truncate flex-1 text-left">
-					{selectedValue || 'Select a model...'}
+					{shortName(selectedValue || '') || 'Select a model...'}
 				</span>
-				<ChevronsUpDownIcon class="opacity-50 flex-shrink-0 ml-1" />
+				<ChevronDown class="opacity-50 flex-shrink-0 ml-1" />
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content class="w-80 max-w-screen p-0">
+	<Popover.Content class="w-96 max-w-screen p-0" align="start">
 		<Command.Root>
-			<Command.Input placeholder="Search models..." />
+			<Command.Input placeholder="Search models..." bind:value={searchValue} />
 			<Command.List>
-				<Command.Empty>No framework found.</Command.Empty>
-				<Command.Group value="frameworks">
-					{#each frameworks as framework (framework.value)}
-						<Command.Item
-							value={framework.value}
-							onSelect={() => {
-								value = framework.value;
-								closeAndFocusTrigger();
-							}}
-						>
-							<CheckIcon class={cn(value !== framework.value && 'text-transparent')} />
-							{framework.label}
-						</Command.Item>
+				{#if searchValue}
+					<Command.Empty>No models found.</Command.Empty>
+				{/if}
+				{#if smallMode}
+					<Command.Group>
+						{#each pinnedModels as model (model.id)}
+							<ModelSelectorRow
+								{model}
+								onSelect={() => {
+									value = model.id;
+									closeAndFocusTrigger();
+								}}
+							/>
+						{/each}
+					</Command.Group>
+				{:else}
+					{#each modelGroups as group}
+						<Command.Group heading={group.name}>
+							{#if !searchValue}
+								<button
+									class="cursor-pointer w-full aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground outline-hidden relative flex select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+									onclick={() => {
+										group.open = !group.open;
+									}}
+								>
+									<Logo creator={group.models[0]?.creator} class="" />
+									{group.name} Models
+									<div class="flex-grow"></div>
+									{#if group.open}
+										<ChevronUp />
+									{:else}
+										<ChevronDown />
+									{/if}
+								</button>
+							{/if}
+
+							{#if group.open || searchValue}
+								{#each group.models as model (model.id)}
+									<ModelSelectorRow
+										{model}
+										onSelect={() => {
+											value = model.id;
+											closeAndFocusTrigger();
+										}}
+									/>
+								{/each}
+							{/if}
+						</Command.Group>
 					{/each}
-				</Command.Group>
+				{/if}
 			</Command.List>
 		</Command.Root>
+		<Separator />
+		<button
+			class="cursor-pointer w-full aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground outline-hidden relative flex select-none items-center gap-2 rounded-sm px-3 py-1.5 text-sm data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+			onclick={() => {
+				smallMode = !smallMode;
+			}}
+		>
+			{#if smallMode}
+				<Expand />
+				All Models
+			{:else}
+				<Shrink />
+				Show {user.row?.openRouterKey ? 'Pinned' : 'Free'} Models Only
+			{/if}
+		</button>
 	</Popover.Content>
 </Popover.Root>

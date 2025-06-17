@@ -4,6 +4,7 @@ import { Doc } from './_generated/dataModel';
 import { internalAction, internalMutation, mutation, query } from './_generated/server';
 import { paginationOptsValidator, PaginationResult } from 'convex/server';
 import { internal } from './_generated/api';
+import { CONF } from '../conf';
 
 export const get = query({
 	args: {
@@ -190,9 +191,10 @@ export const generateThreadName = internalAction({
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				model: 'google/gemini-2.0-flash-lite-001',
-				prompt: 'Name thread. RETURN ONLY TITLE. First message: ' + args.message,
-				max_tokens: 40
+				model: CONF.titleGenerationModelId,
+				prompt:
+					CONF.titleGenerationPrompt + args.message.slice(0, CONF.titleGenerationMessageCharacters),
+				max_tokens: CONF.titleGenerationMaxTokens
 			})
 		};
 		try {
