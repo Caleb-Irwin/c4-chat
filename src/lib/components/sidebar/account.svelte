@@ -2,7 +2,6 @@
 	import Button from '../ui/button/button.svelte';
 	import GoogleIcon from './GoogleIcon.svelte';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import OpenRouterIcon from './OpenRouter.svelte';
 	import { useUser } from '$lib/user.svelte';
 	import { Root } from '../ui/card';
 
@@ -47,23 +46,13 @@
 
 		{#if user.isAnonymous}
 			<Button
-				class="w-full cursor-pointer"
+				class="w-full cursor-pointer bg-white dark:bg-black text-foreground border-2 border-accent hover:bg-muted dark:hover:bg-muted"
 				onclick={() => {
 					user.signInGoogle();
 				}}
 			>
 				<GoogleIcon />
 				Sign in with Google
-			</Button>
-
-			<Button
-				class="w-full cursor-pointer my-2"
-				onclick={() => {
-					user.signInOpenRouter();
-				}}
-			>
-				<OpenRouterIcon />
-				Sign in with OpenRouter
 			</Button>
 		{/if}
 

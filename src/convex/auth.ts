@@ -16,8 +16,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 			const patch: Partial<Doc<'users'>> = {};
 			if (provider.id === 'google') {
 				patch.googleConnected = true;
-			} else if (provider.id === 'openRouter') {
-				patch.openRouterConnected = true;
 			}
 			const existingUser = await ctx.db.get(userId);
 			if (!existingUser) {

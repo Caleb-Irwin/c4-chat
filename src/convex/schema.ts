@@ -21,7 +21,6 @@ export default defineSchema({
 		isAnonymous: v.optional(v.boolean()),
 		// other "users" fields...
 		googleConnected: v.optional(v.boolean()),
-		openRouterConnected: v.optional(v.boolean()),
 		accountCreditsInCentThousandths: v.optional(v.number()),
 		freeRequestsLeft: v.optional(v.number()),
 		freeRequestsBillingCycle: v.optional(v.string()),

@@ -16,7 +16,6 @@ interface User {
 	_addInitialData: (data: Doc<'users'> | null | undefined) => void;
 	signOut: () => void;
 	signInGoogle: () => void;
-	signInOpenRouter: () => void;
 }
 
 class UserClass implements User {
@@ -57,10 +56,6 @@ class UserClass implements User {
 	};
 	signInGoogle = () => {
 		this.auth.signIn('google');
-	};
-	signInOpenRouter = () => {
-		alert('OpenRouter sign-in is not implemented yet.');
-		// this.auth.signIn('openRouter');
 	};
 }
 

@@ -9,6 +9,7 @@
 	import { useChatManager } from '$lib/chats.svelte';
 	import { browser } from '$app/environment';
 	import type { ModelSummary } from '../../../convex/models';
+	import { CONF } from '../../../conf';
 
 	interface Props {
 		models: ModelSummary[];
@@ -65,6 +66,11 @@
 				}}
 			></Textarea>
 		</div>
+		{#if text.length > CONF.maxMessageSizeCharacters}
+			<div class="mx-3 my-1 p-1 px-3 rounded-sm bg-accent">
+				<span class="font-semibold">Warning</span> Message too long
+			</div>
+		{/if}
 		<div class="flex align-middle items-end p-2 pt-1 overflow-hidden">
 			<div class="min-w-8 max-w-80 flex-shrink">
 				<ModelSelector {models} setModelId={(id) => (modelId = id)} />

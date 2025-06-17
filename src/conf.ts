@@ -22,7 +22,8 @@ export const CONF = {
 	systemModelChangePrompt: 'You are now powered by the model {model}.',
 	maxMessageSizeCharacters: 8000,
 	freeMessagesAnonymous: 10,
-	freeMessagesRegistered: 25,
+	freeMessagesRegistered: 50,
 	monthlyCreditsInCentThousandthsRegistered: 1 * 100 * 1000,
-	costPerMessageInCentThousandths: 100
+	costPerMessageInCentThousandths: 100,
+	costPerMbUploadInCentThousandths: 100
 } as const;
