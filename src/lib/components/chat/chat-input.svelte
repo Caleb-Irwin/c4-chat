@@ -68,6 +68,22 @@
 			searchSelected = false;
 		}
 	}
+
+	$effect(() => {
+		if (text.trim()) {
+			chatManager.hasText = true;
+		} else {
+			chatManager.hasText = false;
+		}
+	});
+
+	$effect(() => {
+		if (chatManager.firstMessage) {
+			text = chatManager.firstMessage;
+			chatManager.firstMessage = null;
+			document.getElementById('chat-input')?.focus();
+		}
+	});
 </script>
 
 <div class="px-2 pt-2 rounded-xl rounded-b-none bg-accent/80 shadow-sm backdrop-blur-xs">

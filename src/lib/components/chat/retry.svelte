@@ -30,7 +30,7 @@
 	<Popover.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
 		<RotateCcw />
 	</Popover.Trigger>
-	<Popover.Content class="w-60" side="top">
+	<Popover.Content class="w-50" side="top">
 		<div class="grid gap-4">
 			<ModelSelector
 				{models}

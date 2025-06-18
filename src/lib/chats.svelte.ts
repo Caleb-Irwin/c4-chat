@@ -181,6 +181,8 @@ interface ChatManager {
 	threadId: Id<'threads'> | null;
 	generating: boolean;
 	chat: Chat | null;
+	firstMessage: string | null;
+	hasText: boolean;
 	sendMessage: Chat['sendMessage'];
 	setup: (threadId: Id<'threads'> | null, chat: Chat | null) => void;
 }
@@ -191,6 +193,8 @@ class ChatManagerClass implements ChatManager {
 	private _generating = $state<boolean>(false);
 	generating = $derived<boolean>(this._generating || this.chat?.hasGeneratingMessage || false);
 	private client = useConvexClient();
+	firstMessage = $state<string | null>(null);
+	hasText = $state<boolean>(false);
 
 	sendMessage = async (msg: SendMessageParams) => {
 		try {
