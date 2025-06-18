@@ -2,7 +2,6 @@
 	import { browser } from '$app/environment';
 	import { preloadCode } from '$app/navigation';
 	import { useChatManager } from '$lib/chats.svelte';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { useUser } from '$lib/user.svelte';
 	import { onMount } from 'svelte';
 
