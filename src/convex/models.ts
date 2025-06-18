@@ -1,6 +1,13 @@
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
-import { action, internalAction, internalMutation, internalQuery } from './_generated/server';
+import {
+	action,
+	internalAction,
+	internalMutation,
+	internalQuery,
+	mutation
+} from './_generated/server';
+import { getAuthUserId } from '@convex-dev/auth/server';
 
 export const creators = [
 	'openai',
@@ -97,6 +104,28 @@ export const getModelSummaries = internalQuery({
 
 	handler: async (ctx) => {
 		return (await ctx.db.query('modelSummaries').collect()) satisfies ModelSummary[];
+	}
+});
+
+export const setPinned = mutation({
+	args: { modelId: v.string(), pinned: v.boolean() },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) throw new Error('User not authenticated.');
+
+		const user = await ctx.db.get(userId);
+
+		if (user!.pinnedModels?.includes(args.modelId) === args.pinned) {
+			return;
+		} else if (args.pinned) {
+			await ctx.db.patch(userId, {
+				pinnedModels: [...(user!.pinnedModels || []), args.modelId]
+			});
+		} else {
+			await ctx.db.patch(userId, {
+				pinnedModels: (user!.pinnedModels || []).filter((id) => id !== args.modelId)
+			});
+		}
 	}
 });
 

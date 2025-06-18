@@ -11,6 +11,8 @@
 	import Brain from '@lucide/svelte/icons/brain';
 	import Logo from './logo.svelte';
 	import { shortName } from './shortName';
+	import Pin from '@lucide/svelte/icons/pin';
+	import PinOff from '@lucide/svelte/icons/pin-off';
 
 	interface Props {
 		model: ModelSummary;
@@ -25,14 +27,32 @@
 <Item
 	value={model.id}
 	{onSelect}
-	class={!user.row?.openRouterKey && !CONF.freeModelIds.includes(model.id as any)
+	class="group/model {!user.row?.openRouterKey && !CONF.freeModelIds.includes(model.id as any)
 		? 'cursor-not-allowed opacity-50'
-		: ''}
+		: ''}"
 	disabled={!user.row?.openRouterKey && !CONF.freeModelIds.includes(model.id as any)}
 >
 	<Logo creator={model.creator} class="" />
 	{shortName(model.name)}
 	<div class="flex-grow"></div>
+
+	{#if user.row?.openRouterKey}
+		<button
+			class="w-0 group-hover/model:w-6 transition-[width] overflow-hidden flex-shrink-0 cursor-pointer hover:bg-muted rounded-sm"
+			onclick={(e) => {
+				e.stopPropagation();
+				user.setModelPinned(model.id, !user.row?.pinnedModels?.includes(model.id));
+			}}
+		>
+			<div class="p-1">
+				{#if user.row?.pinnedModels?.includes(model.id)}
+					<PinOff />
+				{:else}
+					<Pin />
+				{/if}
+			</div>
+		</button>
+	{/if}
 
 	{#if model.supportsFiles}
 		<FileText class="h-4 w-4 text-muted-foreground" />

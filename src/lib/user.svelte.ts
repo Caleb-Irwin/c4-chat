@@ -16,6 +16,7 @@ interface User {
 	_addInitialData: (data: Doc<'users'> | null | undefined) => void;
 	signOut: () => void;
 	signInGoogle: () => void;
+	setModelPinned: (modelId: string, pinned: boolean) => Promise<void>;
 }
 
 class UserClass implements User {
@@ -49,14 +50,19 @@ class UserClass implements User {
 		this.initialData = data ?? null;
 	}
 
-	signOut = () => {
+	signOut() {
 		this.auth.signOut().then(() => {
 			window.location.assign('/');
 		});
-	};
-	signInGoogle = () => {
+	}
+	signInGoogle() {
 		this.auth.signIn('google');
-	};
+	}
+
+	async setModelPinned(modelId: string, pinned: boolean) {
+		if (!this.row) return;
+		await this.client.mutation(api.models.setPinned, { modelId, pinned });
+	}
 }
 
 export const useUser = (key = USER_DEFAULT_KEY) => {

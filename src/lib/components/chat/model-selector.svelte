@@ -83,7 +83,7 @@
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content class="w-96 max-w-screen p-0" align="start">
+	<Popover.Content class="w-[400px] max-w-screen p-0" align="start">
 		<Command.Root>
 			<Command.Input placeholder="Search models..." bind:value={searchValue} />
 			<Command.List>
@@ -103,7 +103,7 @@
 						{/each}
 					</Command.Group>
 				{:else}
-					{#each modelGroups as group}
+					{#each modelGroups as group (group.name)}
 						<Command.Group heading={group.name}>
 							{#if !searchValue}
 								<button
@@ -143,6 +143,9 @@
 		<button
 			class="cursor-pointer w-full aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground outline-hidden relative flex select-none items-center gap-2 rounded-sm px-3 py-1.5 text-sm data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
 			onclick={() => {
+				if (!smallMode) {
+					searchValue = '';
+				}
 				smallMode = !smallMode;
 			}}
 		>
