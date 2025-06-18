@@ -15,6 +15,7 @@
 	import { useUser } from '$lib/user.svelte';
 	import AttachmentButton from './attachment-button.svelte';
 	import AttachmentList from './attachment-list.svelte';
+	import { page } from '$app/state';
 
 	interface Props {
 		models: ModelSummary[];
@@ -58,13 +59,19 @@
 
 	function sendMessage() {
 		if (text.trim()) {
-			chatManager.sendMessage({
-				userMessage: text,
-				model: modelId,
-				reasoning: reasoningPower,
-				search: searchSelected
-			});
-			text = '';
+			chatManager
+				.sendMessage({
+					userMessage: text,
+					model: modelId,
+					reasoning: reasoningPower,
+					search: searchSelected
+				})
+				.then(() => {
+					text = '';
+				});
+			if (page.url.pathname !== '/chat') {
+				text = '';
+			}
 			searchSelected = false;
 		}
 	}
