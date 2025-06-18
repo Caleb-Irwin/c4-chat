@@ -15,7 +15,6 @@ import { streamedOpenRouterRequest } from './streamedRequest';
 import { Id } from '../_generated/dataModel';
 import { CONF } from '../../conf';
 import { handleBilling } from './billing';
-import { encodeFile } from './encodeFile';
 
 export const getFinishedMessages = query({
 	args: {

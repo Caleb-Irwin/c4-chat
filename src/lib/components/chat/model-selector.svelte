@@ -29,15 +29,15 @@
 		return CONF.freeModelIds.includes(model.id as any);
 	});
 
-	let pinnedModels = $derived(
-		!user.row?.openRouterKey
-			? freeModels
-			: models.filter((model) => user.row?.pinnedModels?.includes(model.id) ?? false)
-	);
-
 	let open = $state(false);
 	let value: string = $state(user.row?.lastModelUsed ?? CONF.defaultModelId);
 	let triggerRef = $state<HTMLButtonElement>(null!);
+
+	let pinnedModels = $derived(
+		!user.row?.openRouterKey
+			? freeModels
+			: models.filter((model) => user.row?.pinnedModels?.includes(model.id) || false)
+	);
 
 	$effect(() => {
 		setModelId(value);
@@ -106,6 +106,15 @@
 								}}
 							/>
 						{/each}
+						{#if !pinnedModels.find((model) => model.id === value)}
+							<ModelSelectorRow
+								model={models.find((m) => m.id === value) as any}
+								onSelect={() => {
+									closeAndFocusTrigger();
+								}}
+								selected
+							/>
+						{/if}
 					</Command.Group>
 				{:else}
 					{#each modelGroups as group (group.name)}

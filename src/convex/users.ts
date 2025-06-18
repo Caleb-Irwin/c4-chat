@@ -1,6 +1,7 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { query, mutation, internalQuery } from './_generated/server';
+import { query, mutation, internalQuery, action, internalMutation } from './_generated/server';
 import { v } from 'convex/values';
+import { internal } from './_generated/api';
 
 export const getRow = query({
 	handler: async (ctx) => {
@@ -46,41 +47,32 @@ export const updateOpenRouterKey = mutation({
 	}
 });
 
-export const deleteAccount = mutation({
-	args: {},
-	handler: async (ctx, args) => {
+export const deleteAccount = action({
+	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) {
 			throw new Error('User not authenticated');
 		}
 
-		const user = await ctx.db.get(userId);
-		if (!user) {
-			throw new Error('User not found');
-		}
-
-		// Delete all user's threads and messages
-		const threads = await ctx.db
-			.query('threads')
-			.withIndex('by_user_pinned_lastModified', (q) => q.eq('user', userId))
-			.collect();
+		const threads = await ctx.runQuery(internal.threads.getAllThreads, { userId });
 
 		for (const thread of threads) {
-			// Delete all messages in this thread
-			const messages = await ctx.db
-				.query('messages')
-				.withIndex('by_thread_completion', (q) => q.eq('thread', thread._id))
-				.collect();
-
-			for (const message of messages) {
-				await ctx.db.delete(message._id);
-			}
-
-			// Delete the thread
-			await ctx.db.delete(thread._id);
+			await ctx.runMutation(internal.threads.delByThreadId, { threadId: thread._id });
 		}
 
-		// Finally, delete the user
-		await ctx.db.delete(userId);
+		await ctx.runMutation(internal.users.deleteUser, { id: userId });
+	}
+});
+
+export const deleteUser = internalMutation({
+	args: {
+		id: v.id('users')
+	},
+	handler: async (ctx, { id }) => {
+		const user = (await ctx.db.get(id))!;
+		for (const attachment of user.unsentAttachments ?? []) {
+			await ctx.storage.delete(attachment.id);
+		}
+		await ctx.db.delete(id);
 	}
 });

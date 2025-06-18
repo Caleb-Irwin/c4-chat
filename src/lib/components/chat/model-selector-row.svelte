@@ -17,9 +17,10 @@
 	interface Props {
 		model: ModelSummary;
 		onSelect: () => void;
+		selected?: boolean;
 	}
 
-	let { model, onSelect }: Props = $props();
+	let { model, onSelect, selected }: Props = $props();
 
 	let user = useUser();
 </script>
@@ -34,6 +35,9 @@
 >
 	<Logo creator={model.creator} class="" />
 	{shortName(model.name)}
+	{#if selected}
+		<span class="text-muted-foreground"> Selected</span>
+	{/if}
 	<div class="flex-grow"></div>
 
 	{#if user.row?.openRouterKey}

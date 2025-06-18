@@ -66,7 +66,7 @@
 		isDeletingAccount = true;
 
 		try {
-			await client.mutation(api.users.deleteAccount, {});
+			await client.action(api.users.deleteAccount, {});
 			// Redirect to home page after successful deletion
 			window.location.href = '/';
 		} catch (error) {

@@ -1,10 +1,18 @@
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { Doc } from './_generated/dataModel';
-import { internalAction, internalMutation, mutation, query } from './_generated/server';
+import { Doc, Id } from './_generated/dataModel';
+import {
+	internalAction,
+	internalMutation,
+	internalQuery,
+	mutation,
+	MutationCtx,
+	query
+} from './_generated/server';
 import { paginationOptsValidator, PaginationResult } from 'convex/server';
 import { internal } from './_generated/api';
 import { CONF } from '../conf';
+import { delMessageByDoc } from './messages/del';
 
 export const get = query({
 	args: {
@@ -140,18 +148,33 @@ export const del = mutation({
 			throw new Error('Thread not found or you do not have permission to delete it.');
 		}
 
-		await ctx.db.delete(threadId);
-
-		const messages = await ctx.db
-			.query('messages')
-			.withIndex('by_thread_completion', (q) => q.eq('thread', threadId))
-			.collect();
-		for (const message of messages) {
-			await ctx.db.delete(message._id);
-			//TODO Delete attachments if any
-		}
+		await delThread(ctx, threadId);
 	}
 });
+
+export const delByThreadId = internalMutation({
+	args: {
+		threadId: v.id('threads')
+	},
+	handler: async (ctx, { threadId }) => {
+		await delThread(ctx, threadId);
+	}
+});
+
+const delThread = async (ctx: MutationCtx, threadId: Id<'threads'>) => {
+	const thread = await ctx.db.get(threadId);
+	if (thread === null) {
+		throw new Error('Thread not found.');
+	}
+	await ctx.db.delete(threadId);
+	const messages = await ctx.db
+		.query('messages')
+		.withIndex('by_thread_completion', (q) => q.eq('thread', threadId))
+		.collect();
+	for (const message of messages) {
+		await delMessageByDoc(ctx, message);
+	}
+};
 
 export const _addAnonymousThreads = mutation({
 	args: {
@@ -218,5 +241,17 @@ export const setTitle = internalMutation({
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.patch(args.threadId, { title: args.title });
+	}
+});
+
+export const getAllThreads = internalQuery({
+	args: {
+		userId: v.id('users')
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db
+			.query('threads')
+			.withIndex('by_user_pinned_lastModified', (q) => q.eq('user', args.userId))
+			.collect();
 	}
 });
