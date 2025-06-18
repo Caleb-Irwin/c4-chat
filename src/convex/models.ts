@@ -43,7 +43,6 @@ export const initializeModelSummaries = internalAction({
 		const response = await fetch(url, options);
 		const { data } = (await response.json()) as OpenRouterResponse;
 		await ctx.runMutation(internal.models.updateModelSummaries, { data });
-		console.log('Convex initialized with model summaries');
 		return null;
 	}
 });

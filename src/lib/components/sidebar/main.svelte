@@ -72,7 +72,7 @@
 		</h1>
 
 		<div class="flex p-1 pt-0">
-			<Button href="/" class="w-full" data-sveltekit-preload-data="hover">
+			<Button href="/chat" class="w-full shadow-xs" data-sveltekit-preload-data="hover">
 				<span>New Chat</span>
 			</Button>
 		</div>

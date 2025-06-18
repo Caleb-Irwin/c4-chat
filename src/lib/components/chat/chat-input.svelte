@@ -123,7 +123,7 @@
 							{#each reasoningOptions as option}
 								<button
 									type="button"
-									class="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded hover:bg-accent hover:text-accent-foreground transition-colors"
+									class="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded hover:bg-accent hover:text-accent-foreground transition-colors shadow-xs"
 									onclick={() => (reasoningPower = option.value)}
 								>
 									<div class="flex flex-col justify-start">

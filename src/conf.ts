@@ -1,6 +1,7 @@
 export const CONF = {
-	defaultModelId: 'google/gemini-2.0-flash-001',
+	defaultModelId: 'google/gemini-2.5-flash-preview-05-20',
 	freeModelIds: [
+		'google/gemini-2.5-flash-preview-05-20',
 		'google/gemini-2.0-flash-001',
 		'openai/gpt-4o-mini',
 		'x-ai/grok-3-mini-beta',
