@@ -12,7 +12,8 @@ Try it out: [C4 Chat](https://c4-chat.calebirwin.ca/chat)
 - KaTex and math rendering
 - Resumable streams
 - Up to 1,000 requests per month with BYOK (for $0!)
-- Pinned models + threads
+- Pinned threads + models
+- Search threads + models
 - Exposed reasoning + search groundings
 
 | Better than T3 Chat | Worse than T3 Chat |
