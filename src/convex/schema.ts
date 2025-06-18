@@ -1,7 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 import { authTables } from '@convex-dev/auth/server';
-import { openRouterModelsTable } from './init';
 
 export const completionStatusUnion = v.union(
 	v.literal('stopped'),
@@ -29,7 +28,26 @@ export default defineSchema({
 		lastModelUsed: v.optional(v.string()),
 		pinnedModels: v.optional(v.array(v.string()))
 	}).index('email', ['email']),
-	openRouterModels: openRouterModelsTable,
+	modelSummaries: defineTable({
+		name: v.string(),
+		id: v.string(),
+		creator: v.union(
+			v.literal('openai'),
+			v.literal('anthropic'),
+			v.literal('google'),
+			v.literal('mistralai'),
+			v.literal('meta-llama'),
+			v.literal('x-ai'),
+			v.literal('deepseek'),
+			v.literal('qwen'),
+			v.null()
+		),
+		supportsImages: v.boolean(),
+		supportsFiles: v.boolean(),
+		supportsReasoning: v.boolean()
+	})
+		.index('by_creator', ['creator'])
+		.index('by_model_id', ['id']),
 	threads: defineTable({
 		user: v.id('users'),
 		title: v.string(),

@@ -157,8 +157,8 @@ export const startMessage = internalMutation({
 
 		const isPremium = !!userRow.openRouterKey;
 		const modelRow = await ctx.db
-			.query('openRouterModels')
-			.withIndex('by_open_router_id', (q) => q.eq('id', args.model))
+			.query('modelSummaries')
+			.withIndex('by_model_id', (q) => q.eq('id', args.model))
 			.first();
 		if (!modelRow) {
 			console.error('Model not found:', args.model);

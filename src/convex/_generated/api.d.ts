@@ -15,7 +15,6 @@ import type {
 } from "convex/server";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
-import type * as init from "../init.js";
 import type * as messages_billing from "../messages/billing.js";
 import type * as messages_index from "../messages/index.js";
 import type * as messages_streamedRequest from "../messages/streamedRequest.js";
@@ -35,7 +34,6 @@ import type * as users from "../users.js";
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   http: typeof http;
-  init: typeof init;
   "messages/billing": typeof messages_billing;
   "messages/index": typeof messages_index;
   "messages/streamedRequest": typeof messages_streamedRequest;

@@ -263,7 +263,7 @@
 							<li>• Unlock attachments and search</li>
 							<li>• Pay-per-use pricing directly through OpenRouter</li>
 							<li>• Access hundreds of AI models</li>
-							<li>• All requests through your key (including naming threads)</li>
+							<li>• All requests go through your key (including naming threads)</li>
 						</ul>
 						<p class="text-sm text-muted-foreground mt-3">
 							Get your API key from <a

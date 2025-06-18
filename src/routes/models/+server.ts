@@ -10,7 +10,7 @@ export const GET = (async (event: RequestEvent) => {
 	const client = await createConvexHttpClient(event);
 
 	try {
-		const models = await client.action(api.models.allModelSummaries, {});
+		const models = await client.action(api.models.initAndGetModelSummaries, { forceRefresh: true });
 		return json(models);
 	} catch (error) {
 		console.error('Error fetching models:', error);

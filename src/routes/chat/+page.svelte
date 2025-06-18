@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { preloadCode } from '$app/navigation';
 	import { useChatManager } from '$lib/chats.svelte';
 	import { useUser } from '$lib/user.svelte';
+	import { onMount } from 'svelte';
 
 	let {} = $props();
 
@@ -8,6 +11,10 @@
 	const chatManager = useChatManager();
 	$effect(() => {
 		if (chatManager.threadId !== null) chatManager.setup(null, null);
+	});
+
+	onMount(() => {
+		if (browser) preloadCode('/chat/*');
 	});
 </script>
 
