@@ -104,7 +104,7 @@
 			>
 
 			<p class="text-center flex-grow">
-				Made by <a href="https://calebirwin.ca" class="font-semibold">Caleb</a> in 🇨🇦
+				Made by <a href="https://calebirwin.ca" class="font-semibold">Caleb</a> in Canada
 			</p>
 		</div>
 	</Sidebar.Footer>

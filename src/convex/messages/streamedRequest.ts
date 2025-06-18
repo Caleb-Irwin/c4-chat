@@ -21,7 +21,12 @@ export async function streamedOpenRouterRequest({
 	try {
 		const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
 			method: 'POST',
-			headers: { Authorization: `Bearer ${openRouterApiKey}`, 'Content-Type': 'application/json' },
+			headers: {
+				Authorization: `Bearer ${openRouterApiKey}`,
+				'Content-Type': 'application/json',
+				'HTTP-Referer': 'https://c4-chat.calebirwin.ca',
+				'X-Title': 'C4 Chat'
+			},
 			body: JSON.stringify(body),
 			signal: controller.signal
 		});

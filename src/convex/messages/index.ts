@@ -111,11 +111,14 @@ async function getBodyMessage(
 	return messages.flatMap((msg, i) => {
 		const res: openRouterMessages[] = [];
 		if (i === 0) {
-			res.push({ role: 'system', content: CONF.systemPrompt.replace('{model}', msg.model) });
+			res.push({
+				role: 'system',
+				content: CONF.systemPrompt.replace('{model}', msg.modelName ?? msg.model)
+			});
 		} else if (msg.model !== messages[i - 1].model) {
 			res.push({
 				role: 'system',
-				content: CONF.systemModelChangePrompt.replace('{model}', msg.model)
+				content: CONF.systemModelChangePrompt.replace('{model}', msg.modelName ?? msg.model)
 			});
 		}
 		res.push({ role: 'user', content: msg.userMessage });
@@ -174,6 +177,7 @@ export const startMessage = internalMutation({
 			thread: args.threadId,
 			userMessage: args.userMessage.slice(0, CONF.maxMessageSizeCharacters),
 			model: args.model,
+			modelName: modelRow.name,
 			completed: false,
 			message: '',
 			reasoning: '',

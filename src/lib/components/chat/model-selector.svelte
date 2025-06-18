@@ -75,6 +75,11 @@
 				class="border-0 bg-transparent dark:bg-transparent shadow-none justify-between min-w-0 max-w-full overflow-hidden"
 				role="combobox"
 				aria-expanded={open}
+				onclick={(e) => {
+					searchValue = '';
+					open = !open;
+					smallMode = true;
+				}}
 			>
 				<span class="truncate flex-1 text-left">
 					{shortName(selectedValue || '') || 'Select a model...'}

@@ -258,7 +258,7 @@
 					</div>
 
 					<div class="bg-muted p-4 rounded-lg">
-						<h4 class="font-medium mb-2">Benefits of connecting OpenRouter:</h4>
+						<h4 class="font-medium mb-2">Benefits of Connecting OpenRouter</h4>
 						<ul class="text-sm text-muted-foreground space-y-1">
 							<li>• Unlock attachments and search</li>
 							<li>• Pay-per-use pricing directly through OpenRouter</li>

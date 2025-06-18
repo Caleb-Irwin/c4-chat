@@ -42,7 +42,7 @@
 					<div class="text-primary">
 						<p class="font-medium mb-1">Unlock More Features</p>
 						<p class="text-xs text-primary">
-							Sign in or create an account to access more features and credits
+							Sign in to access more features and send more requests
 						</p>
 					</div>
 				</div>

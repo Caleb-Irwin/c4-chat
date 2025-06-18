@@ -63,6 +63,7 @@ export default defineSchema({
 	messages: defineTable({
 		thread: v.id('threads'),
 		model: v.string(),
+		modelName: v.optional(v.string()),
 		completed: v.boolean(),
 		completionStatus: v.optional(completionStatusUnion),
 		userMessage: v.string(),

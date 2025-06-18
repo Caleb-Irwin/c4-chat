@@ -6,7 +6,8 @@ export const CONF = {
 		'openai/gpt-4o-mini',
 		'x-ai/grok-3-mini-beta',
 		'mistralai/mistral-small-3.1-24b-instruct',
-		'meta-llama/llama-3.3-70b-instruct'
+		'meta-llama/llama-3.3-70b-instruct',
+		'qwen/qwen-2.5-72b-instruct'
 	],
 	defaultPinnedModelIds: [
 		'anthropic/claude-sonnet-4',
@@ -18,7 +19,7 @@ export const CONF = {
 	],
 	titleGenerationModelId: 'google/gemini-2.0-flash-lite-001',
 	titleGenerationPrompt:
-		'Generate a single, concise thread title (≤ 6 words, Title Case, no ending punctuation) that captures the main topic of the next message. • Use the same language as the message. Return only the title text. Here is the message:\n \n {message}',
+		'Generate a single, concise thread title (≤ 4 words, Title Case, no ending punctuation) that captures the main topic of the next message. • Use the same language as the message. Return only the title text. Here is the message:\n\n{message}',
 	titleGenerationMaxTokens: 40,
 	titleGenerationMessageCharacters: 300,
 	systemPrompt: 'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}.',
