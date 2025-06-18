@@ -15,6 +15,7 @@ import { streamedOpenRouterRequest } from './streamedRequest';
 import type { Id } from '../_generated/dataModel';
 import { CONF } from '../../conf';
 import { handleBilling } from './billing';
+import { annotation } from '../schema';
 
 export const getFinishedMessages = query({
 	args: {
@@ -272,7 +273,7 @@ export const startMessage = internalMutation({
 		});
 
 		const messageBodyLestMessages = {
-			model: modelRow.id,
+			model: modelRow.id + (isPremium && args.search ? ':nitro:online' : ':nitro'),
 			reasoning:
 				isPremium && args.reasoning !== 'default'
 					? {
@@ -340,14 +341,16 @@ export const completeMessage = internalMutation({
 	args: {
 		messageId: v.id('messages'),
 		message: v.string(),
-		reasoning: v.string()
+		reasoning: v.string(),
+		annotations: v.optional(v.array(annotation))
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.patch(args.messageId, {
 			completed: true,
 			completionStatus: 'completed',
 			message: args.message,
-			reasoning: args.reasoning
+			reasoning: args.reasoning,
+			annotations: args.annotations
 		});
 		const { thread } = (await ctx.db.get(args.messageId))!;
 		await ctx.db.patch(thread, { generating: false });
@@ -385,11 +388,11 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 
 		try {
 			let lastChunkUpdate: number | null = null;
-			const { message, reasoning } = await streamedOpenRouterRequest({
+			const { message, reasoning, annotations } = await streamedOpenRouterRequest({
 				body: { messages, ...messageBodyLestMessages },
 				openRouterApiKey: key,
 				outputWriter: writer,
-				onChunkUpdate: async (fullResponseSoFar: string, fullReasoningSoFar, abort) => {
+				onChunkUpdate: async ({ completeString, completeReasoning }, abort) => {
 					const now = Date.now();
 					if (lastChunkUpdate === null || now - lastChunkUpdate > 500) {
 						lastChunkUpdate = now;
@@ -397,8 +400,8 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 							internal.messages.updateGeneratingMessage,
 							{
 								messageId,
-								message: fullResponseSoFar,
-								reasoning: fullReasoningSoFar
+								message: completeString,
+								reasoning: completeReasoning
 							}
 						);
 						if (completionStatus === 'stopped' || deleted) {
@@ -410,7 +413,8 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 			await ctx.runMutation(internal.messages.completeMessage, {
 				messageId,
 				message,
-				reasoning
+				reasoning,
+				annotations
 			});
 		} catch (e) {
 			console.error('Error in streamedOpenRouterRequest:', e);

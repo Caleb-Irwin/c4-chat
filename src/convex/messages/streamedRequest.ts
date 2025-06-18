@@ -1,3 +1,5 @@
+import { AnnotationType } from '../schema';
+
 export async function streamedOpenRouterRequest({
 	body,
 	openRouterApiKey,
@@ -8,13 +10,17 @@ export async function streamedOpenRouterRequest({
 	openRouterApiKey: string;
 	outputWriter: WritableStreamDefaultWriter<Uint8Array>;
 	onChunkUpdate: (
-		fullResponseSoFar: string,
-		fullReasoning: string,
+		res: { completeString: string; completeReasoning: string },
 		abort: () => void
 	) => Promise<void>;
-}): Promise<{ message: string; reasoning: string }> {
+}): Promise<{ message: string; reasoning: string; annotations?: AnnotationType[] }> {
 	const controller = new AbortController(),
-		resObj = { buffer: '', completeString: '', completeReasoning: '' },
+		resObj = {
+			buffer: '',
+			completeString: '',
+			completeReasoning: '',
+			annotations: [] as AnnotationType[]
+		},
 		decoder = new TextDecoder(),
 		encoder = new TextEncoder();
 
@@ -63,6 +69,9 @@ export async function streamedOpenRouterRequest({
 						const parsed = JSON.parse(data);
 						const content = parsed.choices[0].delta.content;
 						const reasoning = parsed.choices[0].delta.reasoning;
+						const annotations = parsed.choices[0].delta?.annotations as
+							| ResAnnotationType[]
+							| undefined;
 						if (content) {
 							resObj.completeString += content;
 							outputWriter.write(encoder.encode(content));
@@ -70,10 +79,22 @@ export async function streamedOpenRouterRequest({
 						if (reasoning) {
 							resObj.completeReasoning += reasoning;
 						}
+						if (annotations && Array.isArray(annotations)) {
+							annotations.forEach((res) => {
+								const annotation = res.url_citation;
+								const newAnnotation: AnnotationType = {
+									url: annotation.url,
+									title: annotation.title,
+									startIndex: annotation.start_index,
+									endIndex: annotation.end_index,
+									content: annotation.content
+								};
+								resObj.annotations.push(newAnnotation);
+							});
+						}
+
 						if (content || reasoning) {
-							await onChunkUpdate(resObj.completeString, resObj.completeReasoning, () =>
-								controller.abort()
-							);
+							await onChunkUpdate(resObj, () => controller.abort());
 						}
 					} catch (e) {
 						// Ignore invalid JSON
@@ -88,5 +109,22 @@ export async function streamedOpenRouterRequest({
 			throw error;
 		}
 	}
-	return { message: resObj.completeString, reasoning: resObj.completeReasoning };
+	return {
+		message: resObj.completeString,
+		reasoning: resObj.completeReasoning,
+		annotations: resObj.annotations.length > 0 ? resObj.annotations : undefined
+	};
+}
+
+interface ResAnnotationType {
+	type: 'url_citation';
+	url_citation: UrlCitation;
+}
+
+interface UrlCitation {
+	url: string;
+	title: string;
+	start_index?: number;
+	end_index?: number;
+	content?: string;
 }

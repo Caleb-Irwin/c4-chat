@@ -65,6 +65,7 @@
 				search: searchSelected
 			});
 			text = '';
+			searchSelected = false;
 		}
 	}
 </script>

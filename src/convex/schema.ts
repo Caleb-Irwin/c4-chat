@@ -17,6 +17,15 @@ const attachment = v.object({
 });
 export type AttachmentType = typeof attachment.type;
 
+export const annotation = v.object({
+	endIndex: v.optional(v.number()),
+	startIndex: v.optional(v.number()),
+	title: v.optional(v.string()),
+	url: v.optional(v.string()),
+	content: v.optional(v.string())
+});
+export type AnnotationType = typeof annotation.type;
+
 export default defineSchema({
 	...authTables,
 	users: defineTable({
@@ -79,7 +88,8 @@ export default defineSchema({
 		userMessage: v.string(),
 		message: v.string(),
 		reasoning: v.optional(v.string()),
-		attachments: v.optional(v.array(attachment))
+		attachments: v.optional(v.array(attachment)),
+		annotations: v.optional(v.array(annotation))
 	})
 		.index('by_thread_completion', ['thread', 'completed'])
 		.index('by_thread', ['thread'])
