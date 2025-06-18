@@ -1,7 +1,7 @@
 import { convexAuth } from '@convex-dev/auth/server';
 import { Anonymous } from '@convex-dev/auth/providers/Anonymous';
 import Google from '@auth/core/providers/google';
-import { Doc } from './_generated/dataModel';
+import type { Doc } from './_generated/dataModel';
 import { CONF } from '../conf';
 import { getBillingPeriod } from './messages/billing';
 

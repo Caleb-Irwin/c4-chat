@@ -1,7 +1,7 @@
 import { ConvexError, v } from 'convex/values';
 import { CONF } from '../../conf';
-import { Doc } from '../_generated/dataModel';
-import { internalMutation, MutationCtx } from '../_generated/server';
+import type { Doc } from '../_generated/dataModel';
+import { internalMutation, type MutationCtx } from '../_generated/server';
 
 export const getBillingPeriod = () => `${new Date().getUTCFullYear()}-${new Date().getUTCMonth()}`;
 

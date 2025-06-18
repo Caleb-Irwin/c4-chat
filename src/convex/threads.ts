@@ -1,15 +1,15 @@
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { Doc, Id } from './_generated/dataModel';
+import type { Doc, Id } from './_generated/dataModel';
 import {
 	internalAction,
 	internalMutation,
 	internalQuery,
 	mutation,
-	MutationCtx,
+	type MutationCtx,
 	query
 } from './_generated/server';
-import { paginationOptsValidator, PaginationResult } from 'convex/server';
+import { paginationOptsValidator, type PaginationResult } from 'convex/server';
 import { internal } from './_generated/api';
 import { CONF } from '../conf';
 import { delMessageByDoc } from './messages/del';

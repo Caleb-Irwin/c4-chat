@@ -1,5 +1,5 @@
-import { Doc, Id } from '../_generated/dataModel';
-import { MutationCtx } from '../_generated/server';
+import type { Doc, Id } from '../_generated/dataModel';
+import type { MutationCtx } from '../_generated/server';
 
 export async function delMessageById(ctx: MutationCtx, id: Id<'messages'>): Promise<void> {
 	const message = await ctx.db.get(id);

@@ -5,14 +5,14 @@ import {
 	internalMutation,
 	internalQuery,
 	mutation,
-	MutationCtx,
+	type MutationCtx,
 	query
 } from '.././_generated/server';
 import { ConvexError, v } from 'convex/values';
 import { validate } from 'convex-helpers/validators';
 import { internal } from '.././_generated/api';
 import { streamedOpenRouterRequest } from './streamedRequest';
-import { Id } from '../_generated/dataModel';
+import type { Id } from '../_generated/dataModel';
 import { CONF } from '../../conf';
 import { handleBilling } from './billing';
 
