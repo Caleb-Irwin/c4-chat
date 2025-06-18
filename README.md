@@ -15,6 +15,7 @@ Try it out: [C4 Chat](https://c4-chat.calebirwin.ca/chat)
 - Pinned threads + models
 - Search threads + models
 - Exposed reasoning + search groundings
+- Is not the super slow Svelte based chat app that Theo keeps mentioning
 
 | Better than T3 Chat | Worse than T3 Chat |
 |----------|----------|
