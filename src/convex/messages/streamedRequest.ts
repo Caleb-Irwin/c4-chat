@@ -61,7 +61,6 @@ export async function streamedOpenRouterRequest({
 
 					try {
 						const parsed = JSON.parse(data);
-						console.log('Parsed response:', parsed);
 						const content = parsed.choices[0].delta.content;
 						const reasoning = parsed.choices[0].delta.reasoning;
 						if (content) {
@@ -79,8 +78,6 @@ export async function streamedOpenRouterRequest({
 					} catch (e) {
 						// Ignore invalid JSON
 					}
-				} else {
-					console.warn('Unexpected line format:', line);
 				}
 			}
 		}

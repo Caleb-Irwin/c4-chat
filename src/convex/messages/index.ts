@@ -1,5 +1,13 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { httpAction, internalMutation, mutation, MutationCtx, query } from '.././_generated/server';
+import {
+	httpAction,
+	internalAction,
+	internalMutation,
+	internalQuery,
+	mutation,
+	MutationCtx,
+	query
+} from '.././_generated/server';
 import { ConvexError, v } from 'convex/values';
 import { validate } from 'convex-helpers/validators';
 import { internal } from '.././_generated/api';
@@ -7,6 +15,7 @@ import { streamedOpenRouterRequest } from './streamedRequest';
 import { Id } from '../_generated/dataModel';
 import { CONF } from '../../conf';
 import { handleBilling } from './billing';
+import { encodeFile } from './encodeFile';
 
 export const getFinishedMessages = query({
 	args: {
@@ -90,42 +99,102 @@ export type MessageRequestObject = typeof messageRequestVerifier.type;
 
 interface openRouterMessages {
 	role: 'system' | 'developer' | 'user' | 'assistant' | 'tool';
-	content: string;
+	content:
+		| string
+		| (
+				| { type: 'text'; text: string }
+				| { type: 'image_url'; image_url: { url: string } }
+				| { type: 'file'; file: { name: string; file_data: string } }
+		  )[];
+	cache_control: { type: 'ephemeral' };
 }
 
-async function getBodyMessage(
-	ctx: MutationCtx,
-	messageId: Id<'messages'>
-): Promise<openRouterMessages[]> {
-	const message = await ctx.db.get(messageId);
+export const getPastMessages = internalQuery({
+	args: {
+		messageId: v.id('messages')
+	},
+	handler: async (ctx, args) => {
+		const message = await ctx.db.get(args.messageId);
 
-	const pastMessages = await ctx.db
-		.query('messages')
-		.withIndex('by_thread', (q) =>
-			q.eq('thread', message!.thread).lt('_creationTime', message!._creationTime)
-		)
-		.collect();
+		const pastMessages = await ctx.db
+			.query('messages')
+			.withIndex('by_thread', (q) =>
+				q.eq('thread', message!.thread).lt('_creationTime', message!._creationTime)
+			)
+			.collect();
 
-	const messages = [...pastMessages, message!];
+		return [...pastMessages, message!];
+	}
+});
 
-	return messages.flatMap((msg, i) => {
-		const res: openRouterMessages[] = [];
-		if (i === 0) {
-			res.push({
-				role: 'system',
-				content: CONF.systemPrompt.replace('{model}', msg.modelName ?? msg.model)
-			});
-		} else if (msg.model !== messages[i - 1].model) {
-			res.push({
-				role: 'system',
-				content: CONF.systemModelChangePrompt.replace('{model}', msg.modelName ?? msg.model)
-			});
+export const getMessageBody = internalAction({
+	args: {
+		messageId: v.id('messages')
+	},
+	handler: async (ctx, args): Promise<openRouterMessages[]> => {
+		const messages = await ctx.runQuery(internal.messages.getPastMessages, {
+			messageId: args.messageId
+		});
+		const result: openRouterMessages[] = [];
+
+		for (let i = 0; i < messages.length; i++) {
+			const msg = messages[i];
+
+			if (i === 0) {
+				result.push({
+					role: 'system',
+					content: CONF.systemPrompt.replace('{model}', msg.modelName ?? msg.model),
+					cache_control: { type: 'ephemeral' }
+				});
+			} else if (msg.model !== messages[i - 1].model) {
+				result.push({
+					role: 'system',
+					content: CONF.systemModelChangePrompt.replace('{model}', msg.modelName ?? msg.model),
+					cache_control: { type: 'ephemeral' }
+				});
+			}
+
+			const content: openRouterMessages['content'] = [
+				{ type: 'text' as const, text: msg.userMessage }
+			];
+			if (msg.attachments) {
+				for (const attachment of msg.attachments) {
+					if (attachment.type.startsWith('image/')) {
+						content.push({
+							type: 'image_url' as const,
+							image_url: {
+								url: await ctx.runAction(internal.messages.encodeFile.encodeFile, {
+									id: attachment.id
+								})
+							}
+						});
+					} else {
+						content.push({
+							type: 'file' as const,
+							file: {
+								name: attachment.name,
+								file_data: await ctx.runAction(internal.messages.encodeFile.encodeFile, {
+									id: attachment.id
+								})
+							}
+						});
+					}
+				}
+			}
+			result.push({ role: 'user', content, cache_control: { type: 'ephemeral' } });
+
+			if (msg.message) {
+				result.push({
+					role: 'assistant',
+					content: msg.message,
+					cache_control: { type: 'ephemeral' }
+				});
+			}
 		}
-		res.push({ role: 'user', content: msg.userMessage });
-		if (msg.message) res.push({ role: 'assistant', content: msg.message });
-		return res;
-	});
-}
+
+		return result;
+	}
+});
 
 export const startMessage = internalMutation({
 	args: {
@@ -181,12 +250,20 @@ export const startMessage = internalMutation({
 			completed: false,
 			message: '',
 			reasoning: '',
-			attachments: []
+			attachments: userRow.unsentAttachments?.filter((attachment) => {
+				return (
+					(modelRow.supportsImages && attachment.type.startsWith('image/')) ||
+					attachment.type === 'application/pdf'
+				);
+			})
 		});
 
-		const messageBody = {
+		await ctx.db.patch(userRow._id, {
+			unsentAttachments: []
+		});
+
+		const messageBodyLestMessages = {
 			model: modelRow.id,
-			messages: await getBodyMessage(ctx, messageId),
 			reasoning:
 				isPremium && args.reasoning !== 'default'
 					? {
@@ -199,7 +276,7 @@ export const startMessage = internalMutation({
 
 		return {
 			messageId,
-			messageBody,
+			messageBodyLestMessages,
 			key: userRow.openRouterKey ?? process.env.OPENROUTER_API_KEY!
 		};
 	}
@@ -250,13 +327,6 @@ export const setError = internalMutation({
 	}
 });
 
-export const setStopped = internalMutation({
-	args: {
-		messageId: v.id('messages')
-	},
-	handler: async (ctx, args) => {}
-});
-
 export const completeMessage = internalMutation({
 	args: {
 		messageId: v.id('messages'),
@@ -291,16 +361,23 @@ export const postMessageHandler = httpAction(async (ctx, request) => {
 			console.error('Invalid request format:', req);
 			throw new ConvexError('invalid_request');
 		}
-		const { messageId, messageBody, key } = await ctx.runMutation(internal.messages.startMessage, {
-				userId: userId!,
-				...req
-			}),
+		const { messageId, messageBodyLestMessages, key } = await ctx.runMutation(
+				internal.messages.startMessage,
+				{
+					userId: userId!,
+					...req
+				}
+			),
 			writer = writable.getWriter();
+
+		const messages = await ctx.runAction(internal.messages.getMessageBody, {
+			messageId: messageId
+		});
 
 		try {
 			let lastChunkUpdate: number | null = null;
 			const { message, reasoning } = await streamedOpenRouterRequest({
-				body: messageBody,
+				body: { messages, ...messageBodyLestMessages },
 				openRouterApiKey: key,
 				outputWriter: writer,
 				onChunkUpdate: async (fullResponseSoFar: string, fullReasoningSoFar, abort) => {

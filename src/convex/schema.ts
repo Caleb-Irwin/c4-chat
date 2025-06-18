@@ -1,12 +1,21 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 import { authTables } from '@convex-dev/auth/server';
+import * as vv from 'convex-helpers/validators';
 
 export const completionStatusUnion = v.union(
 	v.literal('stopped'),
 	v.literal('completed'),
 	v.literal('error')
 );
+
+const attachment = v.object({
+	id: vv.id('_storage'),
+	url: v.string(),
+	name: v.string(),
+	type: v.string()
+});
+export type AttachmentType = typeof attachment.type;
 
 export default defineSchema({
 	...authTables,
@@ -26,7 +35,8 @@ export default defineSchema({
 		customSystemPrompt: v.optional(v.string()),
 		openRouterKey: v.optional(v.string()),
 		lastModelUsed: v.optional(v.string()),
-		pinnedModels: v.optional(v.array(v.string()))
+		pinnedModels: v.optional(v.array(v.string())),
+		unsentAttachments: v.optional(v.array(attachment))
 	}).index('email', ['email']),
 	modelSummaries: defineTable({
 		name: v.string(),
@@ -69,15 +79,7 @@ export default defineSchema({
 		userMessage: v.string(),
 		message: v.string(),
 		reasoning: v.optional(v.string()),
-		attachments: v.optional(
-			v.array(
-				v.object({
-					url: v.string(),
-					name: v.string(),
-					type: v.string()
-				})
-			)
-		)
+		attachments: v.optional(v.array(attachment))
 	})
 		.index('by_thread_completion', ['thread', 'completed'])
 		.index('by_thread', ['thread'])

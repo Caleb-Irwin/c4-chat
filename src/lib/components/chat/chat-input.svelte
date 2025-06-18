@@ -4,7 +4,6 @@
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import ModelSelector from './model-selector.svelte';
 	import Globe from '@lucide/svelte/icons/globe';
-	import Paperclip from '@lucide/svelte/icons/paperclip';
 	import Square from '@lucide/svelte/icons/square';
 	import { useChatManager } from '$lib/chats.svelte';
 	import { browser } from '$app/environment';
@@ -14,6 +13,8 @@
 	import * as Popover from '../ui/popover';
 	import Check from '@lucide/svelte/icons/check';
 	import { useUser } from '$lib/user.svelte';
+	import AttachmentButton from './attachment-button.svelte';
+	import AttachmentList from './attachment-list.svelte';
 
 	interface Props {
 		models: ModelSummary[];
@@ -30,8 +31,14 @@
 		reasoningPower = $state<'default' | 'low' | 'medium' | 'high'>('default'),
 		reasoningSelected = $derived(reasoningPower !== 'default'),
 		searchSelected = $derived(false),
-		attachSelected = $derived(false),
-		isPremium = $derived(!!user.row?.openRouterKey);
+		isPremium = $derived(!!user.row?.openRouterKey),
+		isUploading = $state(false);
+
+	const hasImage = $derived(
+			user.row?.unsentAttachments?.some((attachment) => attachment.type.startsWith('image/'))
+		),
+		imagesAllowed = $derived(models.find((model) => model.id === modelId)?.supportsImages ?? true),
+		invalidAttachment = $derived(hasImage && !imagesAllowed);
 
 	const reasoningOptions = [
 		{ value: 'default', label: 'Default' },
@@ -75,6 +82,12 @@
 		}}
 	>
 		<div class="p-3 pb-0">
+			{#if user.row?.unsentAttachments && user.row?.unsentAttachments.length > 0}
+				<div class="flex flex-wrap gap-2 mb-3">
+					<AttachmentList attachments={user.row.unsentAttachments} allowDelete />
+				</div>
+			{/if}
+
 			<Textarea
 				name="chat-input"
 				id="chat-input"
@@ -91,7 +104,13 @@
 		</div>
 		{#if text.length > CONF.maxMessageSizeCharacters}
 			<div class="mx-3 my-1 p-1 px-3 rounded-sm bg-accent">
-				<span class="font-semibold">Warning</span> Message too long
+				<span class="font-semibold pr-2">Warning</span> Message too long
+			</div>
+		{/if}
+		{#if invalidAttachment}
+			<div class="mx-3 my-1 p-1 px-3 rounded-sm bg-accent">
+				<span class="font-semibold pr-2">Warning</span> This model does not support images. Remove image
+				attachments.
 			</div>
 		{/if}
 		<div class="flex align-middle items-end p-2 pt-1 overflow-hidden">
@@ -154,23 +173,17 @@
 				<Globe />
 				<span class="hidden sm:inline"> Search </span>
 			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="ml-1 rounded-full w-8 sm:w-auto flex-shrink-0 bg-transparent dark:bg-transparent border-accent-foreground/20 dark:border-accent-foreground/20 hover:bg-accent/80 dark:hover:bg-accent/80 {attachSelected
-					? 'bg-accent dark:bg-accent'
-					: ''}"
+			<AttachmentButton
 				disabled={!isPremium}
-				onclick={() => (attachSelected = !attachSelected)}
-			>
-				<Paperclip />
-				<span class="hidden sm:inline"> Attach </span>
-			</Button>
+				setUploading={(uploading) => (isUploading = uploading)}
+				acceptImages={imagesAllowed}
+			/>
 			<div class="flex-grow"></div>
 			<Button
 				size="icon"
 				class="ml-1 flex-shrink-0"
-				disabled={!text.trim() && !chatManager.chat?.hasGeneratingMessage}
+				disabled={(!text.trim() || isUploading || invalidAttachment) &&
+					!chatManager.chat?.hasGeneratingMessage}
 				type="submit"
 			>
 				{#if chatManager.generating}

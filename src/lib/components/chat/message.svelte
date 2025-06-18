@@ -6,6 +6,7 @@
 	import { Root } from '../ui/card';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import Separator from '../ui/separator/separator.svelte';
+	import AttachmentList from './attachment-list.svelte';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -32,9 +33,14 @@
 <div class="flex justify-end">
 	<div
 		bind:this={userMessageElement}
-		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl mt-8"
+		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl mt-8 flex flex-col"
 	>
 		{message.userMessage}
+		{#if message.attachments}
+			<div class="flex flex-wrap gap-2 pt-2 justify-end w-full">
+				<AttachmentList attachments={message.attachments} />
+			</div>
+		{/if}
 	</div>
 </div>
 

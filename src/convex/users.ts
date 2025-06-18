@@ -1,5 +1,5 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { query, mutation } from './_generated/server';
+import { query, mutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 
 export const getRow = query({
@@ -9,6 +9,15 @@ export const getRow = query({
 			return null;
 		}
 		return await ctx.db.get(userId);
+	}
+});
+
+export const getRowById = internalQuery({
+	args: {
+		id: v.id('users')
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.get(args.id);
 	}
 });
 
