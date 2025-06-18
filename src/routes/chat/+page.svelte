@@ -30,7 +30,7 @@
 </script>
 
 <div class="h-full grid place-content-center">
-	{#if !chatManager.hasText}
+	{#if !chatManager.hasText && !chatManager.generating}
 		<h2 class="text-3xl font-semibold mt-8">
 			How can I help you{user.row?.name ? `, ${user.row.name.split(' ')[0]}` : ''}?
 		</h2>

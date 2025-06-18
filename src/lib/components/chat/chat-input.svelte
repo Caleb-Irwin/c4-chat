@@ -16,6 +16,7 @@
 	import AttachmentButton from './attachment-button.svelte';
 	import AttachmentList from './attachment-list.svelte';
 	import { page } from '$app/state';
+	import { tick } from 'svelte';
 
 	interface Props {
 		models: ModelSummary[];
@@ -65,9 +66,10 @@
 				reasoning: reasoningPower,
 				search: searchSelected
 			});
-			chatManager.generating = true;
-			text = '';
-			searchSelected = false;
+			setTimeout(() => {
+				text = '';
+				searchSelected = false;
+			}, 100);
 		}
 	}
 
