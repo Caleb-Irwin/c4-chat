@@ -73,6 +73,19 @@ export const deleteUser = internalMutation({
 		for (const attachment of user.unsentAttachments ?? []) {
 			await ctx.storage.delete(attachment.id);
 		}
+
+		for await (const doc of ctx.db
+			.query('authAccounts')
+			.withIndex('userIdAndProvider', (q) => q.eq('userId', id))) {
+			await ctx.db.delete(doc._id);
+		}
+
+		for await (const doc of ctx.db
+			.query('authSessions')
+			.withIndex('userId', (q) => q.eq('userId', id))) {
+			await ctx.db.delete(doc._id);
+		}
+
 		await ctx.db.delete(id);
 	}
 });

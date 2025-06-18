@@ -14,6 +14,7 @@
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { useChatManager } from '$lib/chats.svelte';
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -43,10 +44,14 @@
 			threads.rename(thread._id, title.trim()).then(() => {});
 		}
 	}
+
+	const chatManager = useChatManager();
+
+	const selected = $derived(chatManager.threadId === thread._id);
 </script>
 
 <Sidebar.MenuItem class="group/item">
-	<Sidebar.MenuButton class="p-0 relative gap-0">
+	<Sidebar.MenuButton class="p-0 relative gap-0 {selected ? 'bg-sidebar-accent' : ''}">
 		{#if isEditing}
 			<Input
 				type="text"
@@ -74,7 +79,7 @@
 		{:else}
 			<a
 				href={`/chat/${thread._id}`}
-				class="px-4 p-2 w-full block"
+				class="px-4 p-2 w-full block text-foreground"
 				onmousedown={(_) => {
 					goto(`/chat/${thread._id}`);
 				}}
@@ -90,7 +95,9 @@
 					: ''}"
 			>
 				<div
-					class="transition-[width] overflow-hidden w-0 h-7 animate-spin bg-sidebar inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
+					class="transition-[width] overflow-hidden w-0 h-7 animate-spin {selected
+						? 'bg-sidebar-accent'
+						: 'bg-sidebar'} inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
 						? 'w-7'
 						: ''}"
 				>

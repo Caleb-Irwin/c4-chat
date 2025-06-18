@@ -67,8 +67,7 @@
 
 		try {
 			await client.action(api.users.deleteAccount, {});
-			// Redirect to home page after successful deletion
-			window.location.href = '/';
+			user.signOut();
 		} catch (error) {
 			console.error('Failed to delete account:', error);
 			alert('Failed to delete account. Please try again.');

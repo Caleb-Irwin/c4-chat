@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { useChatManager } from '$lib/chats.svelte';
 	import ChatInput from '$lib/components/chat/chat-input.svelte';
 	import type { LayoutData } from './$types';
 
@@ -7,8 +6,6 @@
 
 	// Models are now available in this variable
 	const models = data.models;
-
-	useChatManager();
 </script>
 
 <div class="flex-grow h-full flex justify-center">

@@ -21,7 +21,7 @@ export const handleBilling = async function (
 		throw new Error('Insufficient credits or requests');
 	}
 	await ctx.db.patch(userRow._id, {
-		freeRequestsLeft: userRow.freeRequestsLeft - 1,
+		freeRequestsLeft: userRow.freeRequestsLeft - (userRow.openRouterKey ? 0 : 1),
 		accountCreditsInCentThousandths:
 			userRow.accountCreditsInCentThousandths - CONF.costPerMessageInCentThousandths,
 		lastModelUsed: lastModel

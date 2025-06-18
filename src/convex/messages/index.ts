@@ -105,7 +105,7 @@ interface openRouterMessages {
 				| { type: 'image_url'; image_url: { url: string } }
 				| { type: 'file'; file: { name: string; file_data: string } }
 		  )[];
-	cache_control: { type: 'ephemeral' };
+	cache_control?: { type: 'ephemeral' };
 }
 
 export const getPastMessages = internalQuery({
@@ -122,7 +122,7 @@ export const getPastMessages = internalQuery({
 			)
 			.collect();
 
-		return [...pastMessages, message!];
+		return { messages: [...pastMessages, message!], current: message! };
 	}
 });
 
@@ -131,7 +131,7 @@ export const getMessageBody = internalAction({
 		messageId: v.id('messages')
 	},
 	handler: async (ctx, args): Promise<openRouterMessages[]> => {
-		const messages = await ctx.runQuery(internal.messages.getPastMessages, {
+		const { messages, current } = await ctx.runQuery(internal.messages.getPastMessages, {
 			messageId: args.messageId
 		});
 		const result: openRouterMessages[] = [];
@@ -142,14 +142,12 @@ export const getMessageBody = internalAction({
 			if (i === 0) {
 				result.push({
 					role: 'system',
-					content: CONF.systemPrompt.replace('{model}', msg.modelName ?? msg.model),
-					cache_control: { type: 'ephemeral' }
+					content: CONF.systemPrompt.replace('{model}', msg.modelName ?? msg.model)
 				});
 			} else if (msg.model !== messages[i - 1].model) {
 				result.push({
 					role: 'system',
-					content: CONF.systemModelChangePrompt.replace('{model}', msg.modelName ?? msg.model),
-					cache_control: { type: 'ephemeral' }
+					content: CONF.systemModelChangePrompt.replace('{model}', msg.modelName ?? msg.model)
 				});
 			}
 
@@ -180,18 +178,30 @@ export const getMessageBody = internalAction({
 					}
 				}
 			}
-			result.push({ role: 'user', content, cache_control: { type: 'ephemeral' } });
+			result.push({
+				role: 'user',
+				content
+			});
 
 			if (msg.message) {
 				result.push({
 					role: 'assistant',
-					content: msg.message,
-					cache_control: { type: 'ephemeral' }
+					content: msg.message
 				});
 			}
 		}
 
-		return result;
+		const googleOrAnthropic =
+			current.model.startsWith('google/') || current.model.startsWith('anthropic/');
+
+		return googleOrAnthropic
+			? result.map((msg) => {
+					return {
+						...msg,
+						cache_control: { type: 'ephemeral' }
+					} satisfies openRouterMessages;
+				})
+			: result;
 	}
 });
 
