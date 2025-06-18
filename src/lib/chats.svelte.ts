@@ -229,9 +229,9 @@ class ChatManagerClass implements ChatManager {
 	};
 
 	setup(threadId: Id<'threads'> | null, chat: Chat | null) {
+		if (this.threadId) this._generating = chat?.hasGeneratingMessage || false;
 		this.threadId = threadId;
 		this.chat = chat;
-		this._generating = chat?.hasGeneratingMessage || false;
 		this.firstMessage = null;
 	}
 }
