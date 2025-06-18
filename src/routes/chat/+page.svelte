@@ -24,6 +24,10 @@
 		'What is the meaning of life?',
 		'Countries ranked by number of corgis'
 	];
+
+	onMount(() => {
+		chatManager.hasText = false;
+	});
 </script>
 
 <div class="h-full grid place-content-center">

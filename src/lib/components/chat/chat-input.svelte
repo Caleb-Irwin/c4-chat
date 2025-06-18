@@ -59,19 +59,14 @@
 
 	function sendMessage() {
 		if (text.trim()) {
-			chatManager
-				.sendMessage({
-					userMessage: text,
-					model: modelId,
-					reasoning: reasoningPower,
-					search: searchSelected
-				})
-				.then(() => {
-					text = '';
-				});
-			if (page.url.pathname !== '/chat') {
-				text = '';
-			}
+			chatManager.sendMessage({
+				userMessage: text,
+				model: modelId,
+				reasoning: reasoningPower,
+				search: searchSelected
+			});
+			chatManager.generating = true;
+			text = '';
 			searchSelected = false;
 		}
 	}
@@ -79,7 +74,7 @@
 	$effect(() => {
 		if (text.trim()) {
 			chatManager.hasText = true;
-		} else {
+		} else if (!chatManager.generating) {
 			chatManager.hasText = false;
 		}
 	});
