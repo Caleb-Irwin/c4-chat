@@ -98,7 +98,7 @@
 					class="transition-[width] overflow-hidden w-0 h-7 animate-spin {selected
 						? 'bg-sidebar-accent'
 						: 'bg-sidebar'} inline-flex shrink-0 items-center justify-center rounded-full [&_svg:not([class*='size-'])]:size-4 {thread.generating
-						? 'w-7'
+						? 'w-7 ml-0.5'
 						: ''}"
 				>
 					<LoaderCircle />
@@ -106,7 +106,7 @@
 
 				<Button
 					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
-						? 'w-7'
+						? 'w-7 ml-0.5'
 						: ''}"
 					variant="ghost"
 					size="icon"
@@ -119,7 +119,7 @@
 
 				<Button
 					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
-						? 'w-7'
+						? 'w-7 ml-0.5'
 						: ''}"
 					variant="ghost"
 					size="icon"
@@ -136,7 +136,7 @@
 
 				<Button
 					class="transition-[width] overflow-hidden w-0 group-hover/item:w-7 group-hover/item:ml-0.5 h-7 bg-sidebar hover:bg-sidebar-accent dark:hover:bg-sidebar-accent cursor-pointer {menuOpen
-						? 'w-7'
+						? 'w-7 ml-0.5'
 						: ''}"
 					variant="ghost"
 					size="icon"

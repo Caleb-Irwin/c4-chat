@@ -8,7 +8,6 @@
 	import Separator from '../ui/separator/separator.svelte';
 	import AttachmentList from './attachment-list.svelte';
 	import Button from '../ui/button/button.svelte';
-	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Edit from '@lucide/svelte/icons/edit';
 	import { shortName } from './shortName';
 	import Copy from './copy.svelte';
@@ -29,7 +28,12 @@
 	let editMode = $state(false),
 		newMessage = $derived(message.userMessage),
 		selected = $state(false),
-		started = $state(false);
+		started = $state(false),
+		userGroupClicked = $state(false),
+		aiGroupClicked = $state(false);
+
+	let userGroupElement: HTMLDivElement;
+	let aiGroupElement: HTMLDivElement;
 
 	$effect(() => {
 		if (!message.completed && userMessageElement && !hasScrolled) {
@@ -53,9 +57,41 @@
 			selected = false;
 		}
 	});
+
+	const handleClickOutside = (event: MouseEvent) => {
+		const target = event.target as Node;
+
+		if (userGroupElement && !userGroupElement.contains(target)) {
+			userGroupClicked = false;
+		}
+
+		if (aiGroupElement && !aiGroupElement.contains(target)) {
+			aiGroupClicked = false;
+		}
+	};
+
+	$effect(() => {
+		if (userGroupClicked || aiGroupClicked) {
+			document.addEventListener('click', handleClickOutside);
+		} else {
+			document.removeEventListener('click', handleClickOutside);
+		}
+	});
 </script>
 
-<div class="flex flex-col items-end group/message w-full">
+<div
+	bind:this={userGroupElement}
+	class="flex flex-col items-end group/message w-full"
+	role="button"
+	tabindex="0"
+	onclick={() => (userGroupClicked = true)}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			userGroupClicked = true;
+		}
+	}}
+>
 	<div
 		bind:this={userMessageElement}
 		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl flex flex-col {editMode
@@ -97,7 +133,7 @@
 	<div
 		class="flex w-full justify-end py-4 gap-1 opacity-0 {message.completed
 			? 'group-hover/message:opacity-100'
-			: ''} transition-opacity"
+			: ''} {userGroupClicked ? 'opacity-100' : ''} transition-opacity"
 	>
 		<Retry messageId={message._id} model={message.model} />
 
@@ -115,7 +151,19 @@
 	</div>
 </div>
 
-<div class="min-h-10 group/message">
+<div
+	bind:this={aiGroupElement}
+	class="min-h-10 group/message"
+	role="button"
+	tabindex="0"
+	onclick={() => (aiGroupClicked = true)}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			aiGroupClicked = true;
+		}
+	}}
+>
 	{#if message.reasoning}
 		<Accordion.Root type="single">
 			<Accordion.Item value="item-1">
@@ -208,7 +256,7 @@
 	<div
 		class="flex w-full justify-start items-center py-3 gap-1 opacity-0 {message.completed
 			? 'group-hover/message:opacity-100'
-			: ''} transition-opacity"
+			: ''} {aiGroupClicked ? 'opacity-100' : ''} transition-opacity"
 	>
 		<Copy text={message.message} />
 		<Retry messageId={message._id} model={message.model} />
