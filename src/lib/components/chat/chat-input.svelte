@@ -207,7 +207,7 @@
 					!chatManager.chat?.hasGeneratingMessage}
 				type="submit"
 			>
-				{#if chatManager.generating}
+				{#if chatManager.chat?.hasGeneratingMessage}
 					<Square fill="currentColor" class="size-5" />
 				{:else}
 					<ArrowUp class="size-5" />
