@@ -1,11 +1,13 @@
 <script lang="ts">
 	import ChatInput from '$lib/components/chat/chat-input.svelte';
+	import { setContext } from 'svelte';
 	import type { LayoutData } from './$types';
 
 	let { children, data }: { children: any; data: LayoutData } = $props();
 
-	// Models are now available in this variable
 	const models = data.models;
+
+	setContext('models', models);
 </script>
 
 <div class="flex-grow h-full flex justify-center">

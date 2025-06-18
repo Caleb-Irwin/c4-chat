@@ -7,6 +7,13 @@
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import Separator from '../ui/separator/separator.svelte';
 	import AttachmentList from './attachment-list.svelte';
+	import Button from '../ui/button/button.svelte';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import Edit from '@lucide/svelte/icons/edit';
+	import { shortName } from './shortName';
+	import Copy from './copy.svelte';
+	import Retry from './retry.svelte';
+	import Textarea from '../ui/textarea/textarea.svelte';
 
 	interface Props {
 		message: Doc<'messages'>;
@@ -17,7 +24,12 @@
 
 	let userMessageElement: HTMLDivElement;
 
-	let hasScrolled = false;
+	let hasScrolled = $state(false);
+
+	let editMode = $state(false),
+		newMessage = $derived(message.userMessage),
+		selected = $state(false),
+		started = $state(false);
 
 	$effect(() => {
 		if (!message.completed && userMessageElement && !hasScrolled) {
@@ -28,23 +40,82 @@
 			hasScrolled = false;
 		}
 	});
+
+	$effect(() => {
+		if (editMode && !selected) {
+			const inputElement = document.getElementById(message._id) as HTMLTextAreaElement;
+			if (!inputElement) return;
+			inputElement.focus();
+			inputElement.setSelectionRange(0, newMessage.length);
+			selected = true;
+		}
+		if (!editMode) {
+			selected = false;
+		}
+	});
 </script>
 
-<div class="flex justify-end">
+<div class="flex flex-col items-end group/message w-full">
 	<div
 		bind:this={userMessageElement}
-		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl mt-8 flex flex-col"
+		class="text-right bg-secondary/50 max-w-[80%] px-4 py-3 rounded-xl flex flex-col {editMode
+			? 'flex-grow'
+			: ''}"
 	>
-		{message.userMessage}
+		{#if !editMode}
+			{message.userMessage}
+		{:else}
+			<Textarea
+				id={message._id}
+				bind:value={newMessage}
+				class="w-full"
+				disabled={started}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' && !e.shiftKey) {
+						e.preventDefault();
+						started = true;
+						chat
+							.editMessage(message._id, newMessage)
+							.then(() => {
+								editMode = false;
+							})
+							.finally(() => {
+								started = false;
+							});
+					}
+				}}
+			/>
+		{/if}
+
 		{#if message.attachments && message.attachments.length > 0}
 			<div class="flex flex-wrap gap-2 pt-2 justify-end w-full">
 				<AttachmentList attachments={message.attachments} />
 			</div>
 		{/if}
 	</div>
+
+	<div
+		class="flex w-full justify-end py-4 gap-1 opacity-0 {message.completed
+			? 'group-hover/message:opacity-100'
+			: ''} transition-opacity"
+	>
+		<Retry messageId={message._id} model={message.model} />
+
+		<Button
+			variant="ghost"
+			size="icon"
+			onclick={() => {
+				editMode = !editMode;
+			}}
+		>
+			<Edit class="h-3 w-3" />
+		</Button>
+
+		<Copy text={message.userMessage} />
+	</div>
 </div>
 
-<div class="min-h-10 pt-8">
+<div class="min-h-10 group/message">
 	{#if message.reasoning}
 		<Accordion.Root type="single">
 			<Accordion.Item value="item-1">
@@ -133,6 +204,16 @@
 			</p>
 		</Root>
 	{/if}
-</div>
 
-<div class="h-8"></div>
+	<div
+		class="flex w-full justify-start items-center py-3 gap-1 opacity-0 {message.completed
+			? 'group-hover/message:opacity-100'
+			: ''} transition-opacity"
+	>
+		<Copy text={message.message} />
+		<Retry messageId={message._id} model={message.model} />
+		<p class="text-sm text-muted-foreground pl-1">
+			{message.modelName ? shortName(message.modelName) : message.model}
+		</p>
+	</div>
+</div>

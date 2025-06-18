@@ -18,9 +18,10 @@
 	interface Props {
 		models: ModelSummary[];
 		setModelId: (id: string) => void;
+		initModelId?: string;
 	}
 
-	let { models, setModelId }: Props = $props();
+	let { models, setModelId, initModelId }: Props = $props();
 
 	const user = useUser();
 	let smallMode = $state(true);
@@ -30,7 +31,7 @@
 	});
 
 	let open = $state(false);
-	let value: string = $state(user.row?.lastModelUsed ?? CONF.defaultModelId);
+	let value: string = $state(initModelId ?? user.row?.lastModelUsed ?? CONF.defaultModelId);
 	let triggerRef = $state<HTMLButtonElement>(null!);
 
 	let pinnedModels = $derived(

@@ -13,6 +13,8 @@ interface Chat {
 	threadId: Id<'threads'> | null;
 	messages: Doc<'messages'>[];
 	hasGeneratingMessage: boolean;
+	retryMessage: (model: string, messageId: Id<'messages'>) => Promise<void>;
+	editMessage: (messageId: Id<'messages'>, newMessage: string) => Promise<void>;
 }
 
 export class ChatClass implements Chat {
@@ -130,6 +132,38 @@ export class ChatClass implements Chat {
 			console.error('Error stopping message:', error);
 			alert(`Error stopping message: ${error}`);
 		}
+	}
+
+	async editMessage(messageId: Id<'messages'>, newMessage: string): Promise<void> {
+		const prevMessage = this.messages.find((msg) => msg._id === messageId);
+		if (!prevMessage) {
+			alert('Message not found');
+			return;
+		}
+
+		await this.sendMessage({
+			userMessage: newMessage,
+			model: prevMessage.model,
+			reasoning: 'default',
+			search: (prevMessage.annotations && prevMessage.annotations.length > 0) ?? false,
+			existingMessageId: messageId
+		});
+	}
+
+	async retryMessage(model: string, messageId: Id<'messages'>): Promise<void> {
+		const prevMessage = this.messages.find((msg) => msg._id === messageId);
+		if (!prevMessage) {
+			alert('Message not found');
+			return;
+		}
+
+		await this.sendMessage({
+			userMessage: prevMessage.userMessage,
+			model,
+			reasoning: 'default',
+			search: (prevMessage.annotations && prevMessage.annotations.length > 0) ?? false,
+			existingMessageId: messageId
+		});
 	}
 }
 

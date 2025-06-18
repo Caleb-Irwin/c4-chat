@@ -1,5 +1,5 @@
 export const CONF = {
-	defaultModelId: 'google/gemini-2.5-flash-preview-05-20',
+	defaultModelId: 'google/gemini-2.0-flash-001',
 	freeModelIds: [
 		'google/gemini-2.5-flash-preview-05-20',
 		'google/gemini-2.0-flash-001',
@@ -15,7 +15,8 @@ export const CONF = {
 		'google/gemini-2.5-flash-preview-05-20',
 		'openai/chatgpt-4o-latest',
 		'deepseek/deepseek-chat-v3-0324',
-		'openai/o4-mini'
+		'openai/o4-mini',
+		'google/gemini-2.0-flash-001'
 	],
 	titleGenerationModelId: 'google/gemini-2.0-flash-lite-001',
 	titleGenerationPrompt:

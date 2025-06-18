@@ -14,7 +14,7 @@
 	setChat(chat);
 </script>
 
-<div class="h-8"></div>
+<div class="h-16"></div>
 
 {#each chat.messages as message (message._id)}
 	<Message {message} />

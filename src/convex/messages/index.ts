@@ -91,7 +91,8 @@ const messageRequestObject = {
 		v.literal('medium'),
 		v.literal('high')
 	),
-	search: v.boolean()
+	search: v.boolean(),
+	existingMessageId: v.optional(v.id('messages'))
 };
 
 const messageRequestVerifier = v.object(messageRequestObject);
@@ -252,21 +253,35 @@ export const startMessage = internalMutation({
 			);
 		}
 
-		const messageId = await ctx.db.insert('messages', {
-			thread: args.threadId,
-			userMessage: args.userMessage.slice(0, CONF.maxMessageSizeCharacters),
-			model: args.model,
-			modelName: modelRow.name,
-			completed: false,
-			message: '',
-			reasoning: '',
-			attachments: userRow.unsentAttachments?.filter((attachment) => {
-				return (
-					(modelRow.supportsImages && attachment.type.startsWith('image/')) ||
-					attachment.type === 'application/pdf'
-				);
-			})
-		});
+		let messageId: Id<'messages'>;
+		if (args.existingMessageId) {
+			await ctx.db.patch(args.existingMessageId, {
+				userMessage: args.userMessage.slice(0, CONF.maxMessageSizeCharacters),
+				model: args.model,
+				modelName: modelRow.name,
+				completed: false,
+				message: '',
+				reasoning: '',
+				annotations: []
+			});
+			messageId = args.existingMessageId;
+		} else {
+			messageId = await ctx.db.insert('messages', {
+				thread: args.threadId,
+				userMessage: args.userMessage.slice(0, CONF.maxMessageSizeCharacters),
+				model: args.model,
+				modelName: modelRow.name,
+				completed: false,
+				message: '',
+				reasoning: '',
+				attachments: userRow.unsentAttachments?.filter((attachment) => {
+					return (
+						(modelRow.supportsImages && attachment.type.startsWith('image/')) ||
+						attachment.type === 'application/pdf'
+					);
+				})
+			});
+		}
 
 		await ctx.db.patch(userRow._id, {
 			unsentAttachments: []
