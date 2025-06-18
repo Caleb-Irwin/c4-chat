@@ -222,7 +222,7 @@ class ChatManagerClass implements ChatManager {
 			}
 		} catch (error) {
 			this._generating = false;
-			alert(`Error sending message: ${error}`);
+			// alert(`Error sending message: ${error}`);
 			console.error('Error sending message:', error);
 			throw error;
 		}
