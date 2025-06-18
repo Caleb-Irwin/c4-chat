@@ -206,7 +206,9 @@
 									<h4 class="font-medium text-sm mb-2">{annotation.title}</h4>
 								{/if}
 								{#if annotation.content}
-									<p class="text-sm text-muted-foreground mb-2">{annotation.content}</p>
+									<p class="text-sm text-muted-foreground mb-2">
+										<MarkdownRenderer md={annotation.content} />
+									</p>
 								{/if}
 								{#if annotation.url}
 									<a
