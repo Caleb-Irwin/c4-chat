@@ -86,6 +86,7 @@ PUBLIC_CONVEX_URL=https://something-something.convex.cloud # Your Deployment URL
 - Error handling is broadly bad (they are caught and thrown well on the server, but not rendered well)
 - OpenAI reasoning models are not labelled as reasoning (since they do not include reasoning parameters or any other indication in OpenRouter's Models API)
 - Reasoning selector is available for all models (due to the above reason)
+- Not recently used (slept) tabs may lose connection to Convex (state may be weird and require reload)
 - Occasionally, search groundings will cause models to appear to be loading forever (with no error thrown)
 - Very long threads will fail for Convex reasons (or context length, which will not be told to the user)
 - Uses pagination for threads (if over 200), not infinite scroll
