@@ -66,10 +66,6 @@
 				reasoning: reasoningPower,
 				search: searchSelected
 			});
-			setTimeout(() => {
-				text = '';
-				searchSelected = false;
-			}, 100);
 		}
 	}
 
@@ -86,6 +82,13 @@
 			text = chatManager.firstMessage;
 			chatManager.firstMessage = null;
 			document.getElementById('chat-input')?.focus();
+		}
+	});
+
+	$effect(() => {
+		if (chatManager.chat?.hasGeneratingMessage) {
+			text = '';
+			searchSelected = false;
 		}
 	});
 </script>
