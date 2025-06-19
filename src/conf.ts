@@ -25,7 +25,7 @@ export const CONF = {
 	titleGenerationMessageCharacters: 300,
 	systemPrompt: 'You are C4 Chat, a helpful AI assistant. You are powered by the model {model}.',
 	systemModelChangePrompt: 'You are now powered by the model {model}.',
-	maxMessageSizeCharacters: 2000,
+	maxMessageSizeCharacters: 10000,
 	freeMessagesAnonymous: 10,
 	freeMessagesRegistered: 50,
 	monthlyCreditsInCentThousandthsRegistered: 1 * 100 * 1000,
