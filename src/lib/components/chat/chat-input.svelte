@@ -15,8 +15,7 @@
 	import { useUser } from '$lib/user.svelte';
 	import AttachmentButton from './attachment-button.svelte';
 	import AttachmentList from './attachment-list.svelte';
-	import { page } from '$app/state';
-	import { tick } from 'svelte';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 
 	interface Props {
 		models: ModelSummary[];
@@ -85,10 +84,13 @@
 		}
 	});
 
+	let startedSending = $state(false);
+
 	$effect(() => {
 		if (chatManager.chat?.hasGeneratingMessage) {
 			text = '';
 			searchSelected = false;
+			startedSending = false;
 		}
 	});
 </script>
@@ -102,6 +104,7 @@
 				chatManager.chat?.stopGenerating();
 			} else {
 				sendMessage();
+				startedSending = true;
 			}
 		}}
 	>
@@ -122,6 +125,7 @@
 					if (e.key === 'Enter' && !e.shiftKey) {
 						e.preventDefault();
 						sendMessage();
+						startedSending = true;
 					}
 				}}
 			></Textarea>
@@ -206,12 +210,16 @@
 			<Button
 				size="icon"
 				class="ml-1 flex-shrink-0"
-				disabled={(!text.trim() || isUploading || invalidAttachment) &&
+				disabled={(!text.trim() || isUploading || invalidAttachment || startedSending) &&
 					!chatManager.chat?.hasGeneratingMessage}
 				type="submit"
 			>
 				{#if chatManager.chat?.hasGeneratingMessage}
 					<Square fill="currentColor" class="size-5" />
+				{:else if startedSending}
+					<div class="grid place-content-center">
+						<LoaderCircle class="size-5 animate-spin" />
+					</div>
 				{:else}
 					<ArrowUp class="size-5" />
 				{/if}

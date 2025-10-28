@@ -15,14 +15,14 @@ Try it out: [C4 Chat](https://c4-chat.calebirwin.ca/chat)
 - Pinned threads + models
 - Search threads + models
 - Exposed reasoning + search groundings
-- Is not the super slow Svelte based chat app that Theo keeps mentioning
+<!-- - Is not the super slow Svelte based chat app that Theo keeps mentioning -->
 
-| Better than T3 Chat | Worse than T3 Chat |
-|----------|----------|
-| More free models + hundreds more with BYOK   | No branching     | 
-| Search and read PDFs with all models | No image generation     |
-| Lighterweight (60% less data transferred for first chat)    | No o3 (without adding OpenAI key in OpenRouter)     |
-| Bring a single key to try hundreds of models (🎉 OpenRouter)   | Has more issues (listed at bottom page)     |
+<!-- | Better than T3 Chat | Worse than T3 Chat | -->
+<!-- |----------|----------| -->
+<!-- | More free models + hundreds more with BYOK   | No branching     |  -->
+<!-- | Search and read PDFs with all models | No image generation     | -->
+<!-- | Lighterweight (60% less data transferred for first chat)    | No o3 (without adding OpenAI key in OpenRouter)     | -->
+<!-- | Bring a single key to try hundreds of models (🎉 OpenRouter)   | Has more issues (listed at bottom page)     | -->
 
 ## Technology
 
