@@ -1,8 +1,10 @@
 export const CONF = {
-	defaultModelId: 'google/gemini-2.0-flash-001',
+	defaultModelId: 'openai/gpt-5-nano',
 	freeModelIds: [
 		'google/gemini-2.5-flash-preview-05-20',
-		// 'google/gemini-2.0-flash-001',
+		'google/gemini-2.0-flash-001',
+		'openai/gpt-5-nano',
+		'x-ai/grok-4-fast',
 		'openai/gpt-4o-mini',
 		'openai/gpt-oss-120b',
 		'mistralai/mistral-small-3.1-24b-instruct',
