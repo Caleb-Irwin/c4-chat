@@ -2,21 +2,20 @@ export const CONF = {
 	defaultModelId: 'google/gemini-2.0-flash-001',
 	freeModelIds: [
 		'google/gemini-2.5-flash-preview-05-20',
-		'google/gemini-2.0-flash-001',
+		// 'google/gemini-2.0-flash-001',
 		'openai/gpt-4o-mini',
-		'x-ai/grok-3-mini-beta',
+		'openai/gpt-oss-120b',
 		'mistralai/mistral-small-3.1-24b-instruct',
 		'meta-llama/llama-3.3-70b-instruct',
-		'qwen/qwen-2.5-72b-instruct'
+		'qwen/qwen-2.5-72b-instruct',
+		'google/gemma-3-12b-it'
 	],
 	defaultPinnedModelIds: [
-		'anthropic/claude-sonnet-4',
-		'google/gemini-2.5-pro-preview',
-		'google/gemini-2.5-flash-preview-05-20',
-		'openai/chatgpt-4o-latest',
-		'deepseek/deepseek-chat-v3-0324',
-		'openai/o4-mini',
-		'google/gemini-2.0-flash-001'
+		'openai/gpt-5',
+		'x-ai/grok-4-fast',
+		'anthropic/claude-sonnet-4.5',
+		'google/gemini-2.5-pro',
+		'deepseek/deepseek-chat-v3-0324'
 	],
 	titleGenerationModelId: 'google/gemini-2.0-flash-lite-001',
 	titleGenerationPrompt:
